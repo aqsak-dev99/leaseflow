@@ -1,7 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>LeaseFlow</h1>
-<p>Setup check page.</p>
-<button class="btn" hx-get="{% url 'dashboard:htmx_check' %}" hx-target="#result">Test HTMX</button>
-<div id="result"></div>
+{% if user.is_authenticated %}
+  <div class="card">
+    <h1>Welcome</h1>
+    <p>Signed in as <strong>{{ user.email }}</strong> ({{ user.get_role_display }}).</p>
+    <p>Organization: <strong>{{ request.organization.name|default:"none" }}</strong></p>
+  </div>
+{% else %}
+  <div class="card">
+    <h1>LeaseFlow</h1>
+    <p>Rental management with an AI assistant for tenants.</p>
+    <p><a href="{% url 'accounts:login' %}">Log in</a> or <a href="{% url 'accounts:signup' %}">create a landlord account</a>.</p>
+  </div>
+{% endif %}
 {% endblock %}

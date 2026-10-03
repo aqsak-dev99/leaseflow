@@ -9,7 +9,21 @@
   <script src="{% static 'js/htmx.min.js' %}" defer></script>
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-  <header class="topbar"><a class="brand" href="/">LeaseFlow</a></header>
+  <header class="topbar">
+    <a class="brand" href="/">LeaseFlow</a>
+    <nav class="nav">
+      {% if user.is_authenticated %}
+        <span class="muted">{{ user.email }}{% if request.organization %} · {{ request.organization.name }}{% endif %}</span>
+        <form method="post" action="{% url 'accounts:logout' %}">
+          {% csrf_token %}
+          <button class="link" type="submit">Log out</button>
+        </form>
+      {% else %}
+        <a href="{% url 'accounts:login' %}">Log in</a>
+        <a href="{% url 'accounts:signup' %}">Sign up</a>
+      {% endif %}
+    </nav>
+  </header>
   <main class="container">{% block content %}{% endblock %}</main>
 </body>
 </html>

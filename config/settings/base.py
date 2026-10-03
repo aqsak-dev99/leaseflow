@@ -85,3 +85,7 @@ if REDIS_URL.startswith("rediss://") and "ssl_cert_reqs" not in REDIS_URL:
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
 CELERY_TIMEZONE = TIME_ZONE
+
+LOGIN_URL = "accounts:login"
+LOGIN_REDIRECT_URL = "dashboard:home"
+LOGOUT_REDIRECT_URL = "accounts:login"
