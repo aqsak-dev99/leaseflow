@@ -94,3 +94,35 @@ a.btn { display: inline-block; text-decoration: none; }
 .htmx-request.htmx-indicator, .htmx-request .htmx-indicator { display: block; }
 
 .chat-header { display: flex; justify-content: space-between; align-items: baseline; }
+
+.topbar .nav a { color: var(--text); }
+.topbar .nav a.brand { margin-right: var(--space); }
+h2 { margin-top: 0; font-size: 1.15rem; }
+.section { margin-bottom: var(--space); }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space); margin-bottom: var(--space); }
+.stat { display: flex; flex-direction: column; gap: 4px; }
+.stat-number { font-size: 1.8rem; font-weight: 700; }
+
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.table th { font-size: 0.85rem; color: var(--muted); font-weight: 600; }
+.table a { color: var(--primary); text-decoration: none; }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.8rem; background: #e9edf2; color: var(--text); }
+.status-open, .status-vacant { background: #fdecc8; color: #7a4b00; }
+.status-in_progress { background: #dbe7ff; color: #1d3f99; }
+.status-resolved, .status-occupied, .status-ok { background: #d9f2e1; color: #17613a; }
+.status-error, .priority-urgent { background: #fbdcd9; color: #8f1d14; }
+.priority-high { background: #fde3cf; color: #8a3b00; }
+
+.filters { display: flex; gap: 8px; }
+.filters a { padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text); text-decoration: none; }
+.filters a.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+.timeline, .steps { padding-left: 20px; }
+.timeline li, .steps li { margin-bottom: 12px; }
+.steps pre { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; overflow-x: auto; font-size: 0.85rem; white-space: pre-wrap; }
+.error { color: #8f1d14; }
+.narrow-form { max-width: 480px; }
+form select, form textarea, form input[type="number"] { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 1rem; font-family: inherit; }

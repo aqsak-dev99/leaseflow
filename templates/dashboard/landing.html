@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>LeaseFlow</h1>
+  <p>Rental management with an AI assistant for tenants.</p>
+  <p><a href="{% url 'accounts:login' %}">Log in</a> or <a href="{% url 'accounts:signup' %}">create a landlord account</a>.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Home · LeaseFlow{% endblock %}
+{% block content %}
+<h1>Welcome{% if user.first_name %}, {{ user.first_name }}{% endif %}</h1>
+<div class="card section">
+  <h2>Your lease</h2>
+  {% if lease %}
+    <p><strong>{{ lease.unit.property.name }}, unit {{ lease.unit.unit_number }}</strong></p>
+    <p class="muted">{{ lease.unit.property.address }}, {{ lease.unit.property.city }}</p>
+    <p>Rent Rs. {{ lease.rent_amount|floatformat:"0g" }} a month, due on day {{ lease.due_day }}. Lease runs {{ lease.start_date|date:"j M Y" }} to {{ lease.end_date|date:"j M Y" }}.</p>
+  {% else %}
+    <p class="muted">You don't have an active lease on file.</p>
+  {% endif %}
+  <p><a class="btn" href="{% url 'dashboard:chat' %}">Open the assistant</a></p>
+</div>
+<div class="card section">
+  <h2>Your maintenance tickets</h2>
+  {% include "dashboard/_ticket_table.html" %}
+</div>
+{% endblock %}

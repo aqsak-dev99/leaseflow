@@ -1,0 +1,20 @@
+<table class="table">
+  <thead>
+    <tr><th>#</th><th>Problem</th><th>Unit</th><th>Category</th><th>Priority</th><th>Status</th><th>Reported</th></tr>
+  </thead>
+  <tbody>
+    {% for ticket in tickets %}
+      <tr>
+        <td>{{ ticket.id }}</td>
+        <td><a href="{% url 'dashboard:ticket_detail' ticket.id %}">{{ ticket.title }}</a></td>
+        <td>{{ ticket.unit.unit_number }}</td>
+        <td>{{ ticket.get_category_display }}</td>
+        <td><span class="badge priority-{{ ticket.priority }}">{{ ticket.get_priority_display }}</span></td>
+        <td><span class="badge status-{{ ticket.status }}">{{ ticket.get_status_display }}</span></td>
+        <td class="muted">{{ ticket.created_at|date:"j M Y" }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7" class="muted">No tickets.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>

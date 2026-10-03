@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Tickets · LeaseFlow{% endblock %}
+{% block content %}
+<h1>Maintenance tickets</h1>
+<p class="filters">
+  <a class="{% if not status %}active{% endif %}" href="{% url 'dashboard:tickets' %}">All</a>
+  {% for value, label in statuses %}
+    <a class="{% if status == value %}active{% endif %}" href="?status={{ value }}">{{ label }}</a>
+  {% endfor %}
+</p>
+<div class="card">
+  {% include "dashboard/_ticket_table.html" %}
+</div>
+{% endblock %}

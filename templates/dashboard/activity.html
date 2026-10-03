@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}AI activity · LeaseFlow{% endblock %}
+{% block content %}
+<h1>AI activity</h1>
+<div class="stats">
+  <div class="card stat"><span class="stat-number">{{ count }}</span><span class="muted">Agent runs</span></div>
+  <div class="card stat"><span class="stat-number">{{ totals.input_tokens|default:0 }}</span><span class="muted">Input tokens</span></div>
+  <div class="card stat"><span class="stat-number">{{ totals.output_tokens|default:0 }}</span><span class="muted">Output tokens</span></div>
+  <div class="card stat"><span class="stat-number">{{ totals.latency|default:0|floatformat:0 }} ms</span><span class="muted">Average time</span></div>
+</div>
+<div class="card section">
+  {% include "dashboard/_run_table.html" %}
+</div>
+{% endblock %}

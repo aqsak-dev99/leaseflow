@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · LeaseFlow{% endblock %}
+{% block content %}
+<h1>{{ request.organization.name|default:"Dashboard" }}</h1>
+<div class="stats">
+  <div class="card stat"><span class="stat-number">{{ occupied }}</span><span class="muted">Occupied units</span></div>
+  <div class="card stat"><span class="stat-number">{{ vacant }}</span><span class="muted">Vacant units</span></div>
+  <div class="card stat"><span class="stat-number">{{ tenants }}</span><span class="muted">Tenants</span></div>
+  <div class="card stat"><span class="stat-number">{{ open_tickets }}</span><span class="muted">Open tickets</span></div>
+</div>
+
+<div class="card section">
+  <h2>Recent tickets</h2>
+  {% include "dashboard/_ticket_table.html" with tickets=recent_tickets %}
+  <p><a href="{% url 'dashboard:tickets' %}">All tickets</a></p>
+</div>
+
+<div class="card section">
+  <h2>Recent AI activity</h2>
+  {% include "dashboard/_run_table.html" with runs=recent_runs %}
+  <p><a href="{% url 'dashboard:activity' %}">All activity</a></p>
+</div>
+{% endblock %}

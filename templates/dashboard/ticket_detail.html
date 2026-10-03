@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Ticket #{{ ticket.id }} · LeaseFlow{% endblock %}
+{% block content %}
+<h1>#{{ ticket.id }} {{ ticket.title }}</h1>
+<div class="card section">
+  <p>
+    <span class="badge status-{{ ticket.status }}">{{ ticket.get_status_display }}</span>
+    <span class="badge priority-{{ ticket.priority }}">{{ ticket.get_priority_display }} priority</span>
+    <span class="badge">{{ ticket.get_category_display }}</span>
+  </p>
+  <p>{{ ticket.description|linebreaksbr }}</p>
+  <p class="muted">
+    {{ ticket.unit.property.name }}, unit {{ ticket.unit.unit_number }} · reported by {{ ticket.reported_by.email }} on {{ ticket.created_at|date:"j M Y, H:i" }}
+    {% if ticket.cost is not None %} · repair cost Rs. {{ ticket.cost|floatformat:"0g" }}{% endif %}
+  </p>
+</div>
+
+<div class="card section">
+  <h2>History</h2>
+  <ul class="timeline">
+    {% for update in updates %}
+      <li>
+        <span class="muted">{{ update.created_at|date:"j M Y, H:i" }} · {{ update.author.email|default:"system" }}{% if update.via_agent %} (through the assistant){% endif %}</span><br>
+        {% if update.old_status %}Status changed from {{ update.old_status }} to {{ update.new_status }}. {% endif %}{{ update.note }}
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+
+{% if is_landlord %}
+<div class="card section narrow-form">
+  <h2>Update this ticket</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn" type="submit">Save update</button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

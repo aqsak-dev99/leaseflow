@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Run #{{ run.id }} · LeaseFlow{% endblock %}
+{% block content %}
+<h1>Agent run #{{ run.id }}</h1>
+<div class="card section">
+  <p>
+    <span class="badge">{{ run.get_trigger_display }}</span>
+    <span class="badge">route: {{ run.route|default:"none" }}</span>
+    <span class="badge status-{{ run.status }}">{{ run.get_status_display }}</span>
+  </p>
+  <p class="muted">
+    {{ run.created_at|date:"j M Y, H:i:s" }}{% if run.conversation %} · {{ run.conversation.user.email }}{% endif %}
+    · {{ run.input_tokens }} tokens in, {{ run.output_tokens }} out · {{ run.latency_ms }} ms
+  </p>
+  {% if question %}<p><strong>Tenant asked:</strong> {{ question.content }}</p>{% endif %}
+  {% if reply %}<p><strong>Assistant replied:</strong> {{ reply.content|linebreaksbr }}</p>{% endif %}
+  {% if run.error %}<p class="error"><strong>Error:</strong> {{ run.error }}</p>{% endif %}
+</div>
+
+<div class="card section">
+  <h2>Steps</h2>
+  <ol class="steps">
+    {% for step in steps %}
+      <li>
+        <strong>{{ step.name }}</strong>
+        <span class="badge">{{ step.type }}</span>
+        <span class="muted">{{ step.ms }} ms{% if step.input_tokens or step.output_tokens %} · {{ step.input_tokens }} in, {{ step.output_tokens }} out{% endif %}</span>
+        {% if step.detail %}<pre>{{ step.detail_text }}</pre>{% endif %}
+      </li>
+    {% empty %}
+      <li class="muted">No steps were recorded.</li>
+    {% endfor %}
+  </ol>
+</div>
+{% endblock %}
