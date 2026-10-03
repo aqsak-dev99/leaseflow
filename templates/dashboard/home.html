@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>LeaseFlow</h1>
+<p>Setup check page.</p>
+<button class="btn" hx-get="{% url 'dashboard:htmx_check' %}" hx-target="#result">Test HTMX</button>
+<div id="result"></div>
+{% endblock %}
