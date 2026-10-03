@@ -6,7 +6,7 @@
     <p>Signed in as <strong>{{ user.email }}</strong> ({{ user.get_role_display }}).</p>
     <p>Organization: <strong>{{ request.organization.name|default:"none" }}</strong></p>
     {% if user.role == "tenant" %}
-      <p><a class="btn" href="{% url 'dashboard:chat' %}">Ask about your lease</a></p>
+      <p><a class="btn" href="{% url 'dashboard:chat' %}">Open the assistant</a></p>
     {% endif %}
   </div>
 {% else %}

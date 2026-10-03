@@ -1,16 +1,1 @@
-<div class="exchange">
-  <p class="question">{{ question }}</p>
-  <div class="answer">
-    <p>{{ answer|linebreaksbr }}</p>
-    {% if citations %}
-      <div class="citations">
-        {% for citation in citations %}
-          <details>
-            <summary>[{{ citation.number }}] {{ citation.title }}, page {{ citation.page }}</summary>
-            <p class="muted">{{ citation.text }}</p>
-          </details>
-        {% endfor %}
-      </div>
-    {% endif %}
-  </div>
-</div>
+{% for message in messages %}{% include "dashboard/_message.html" %}{% endfor %}

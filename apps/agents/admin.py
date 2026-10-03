@@ -1,2 +1,21 @@
+from django.contrib import admin
 
-# Register your models here.
+from .models import AgentRun, Conversation, Message
+
+
+@admin.register(Conversation)
+class ConversationAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "title", "organization", "created_at")
+    list_filter = ("organization",)
+
+
+@admin.register(Message)
+class MessageAdmin(admin.ModelAdmin):
+    list_display = ("conversation", "role", "content", "created_at")
+    list_filter = ("organization", "role")
+
+
+@admin.register(AgentRun)
+class AgentRunAdmin(admin.ModelAdmin):
+    list_display = ("id", "trigger", "route", "status", "input_tokens", "latency_ms")
+    list_filter = ("organization", "trigger", "route", "status")

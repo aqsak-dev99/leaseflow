@@ -92,3 +92,5 @@ a.btn { display: inline-block; text-decoration: none; }
 .chat-form input { flex: 1; }
 .htmx-indicator { display: none; }
 .htmx-request.htmx-indicator, .htmx-request .htmx-indicator { display: block; }
+
+.chat-header { display: flex; justify-content: space-between; align-items: baseline; }

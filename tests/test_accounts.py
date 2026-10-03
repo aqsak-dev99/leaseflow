@@ -23,10 +23,10 @@ def test_signup_creates_organization_and_landlord(client):
 
 
 @pytest.mark.django_db
-def test_seed_demo_is_safe_to_run_twice():
-    call_command("seed_demo")
+def test_seed_demo_is_safe_to_run_again():
+    before = (Organization.objects.count(), User.objects.count(), Lease.objects.count())
+
     call_command("seed_demo")
 
-    assert Organization.objects.count() == 2
-    assert User.objects.count() == 6
-    assert Lease.objects.count() == 4
+    after = (Organization.objects.count(), User.objects.count(), Lease.objects.count())
+    assert before == after == (2, 6, 4)

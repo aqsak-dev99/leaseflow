@@ -1,19 +1,27 @@
 {% extends "base.html" %}
-{% block title %}Lease assistant · LeaseFlow{% endblock %}
+{% block title %}Assistant · LeaseFlow{% endblock %}
 {% block content %}
 <div class="card chat">
-  <h1>Lease assistant</h1>
-  <p class="muted">Ask a question about your lease or your building's rules. Answers come only from your own documents.</p>
-  <div id="messages" class="messages"></div>
+  <div class="chat-header">
+    <h1>Assistant</h1>
+    <form method="post" action="{% url 'dashboard:chat_new' %}">
+      {% csrf_token %}
+      <button class="link" type="submit">New conversation</button>
+    </form>
+  </div>
+  <p class="muted">Ask about your lease or building rules, or report a problem in your unit.</p>
+  <div id="messages" class="messages">
+    {% for message in messages %}{% include "dashboard/_message.html" %}{% endfor %}
+  </div>
   <form class="chat-form"
         hx-post="{% url 'dashboard:chat_send' %}"
         hx-target="#messages"
         hx-swap="beforeend"
         hx-indicator="#thinking"
         hx-on::after-request="this.reset()">
-    <input type="text" name="question" maxlength="500" placeholder="e.g. What is my notice period?" required autocomplete="off">
+    <input type="text" name="question" maxlength="500" placeholder="e.g. My kitchen sink is leaking" required autocomplete="off">
     <button class="btn" type="submit">Ask</button>
   </form>
-  <p id="thinking" class="htmx-indicator muted">Reading your lease…</p>
+  <p id="thinking" class="htmx-indicator muted">Working on it…</p>
 </div>
 {% endblock %}
