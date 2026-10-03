@@ -9,3 +9,5 @@ whitenoise
 langgraph
 langchain-groq
 langchain-google-genai
+pypdf
+fpdf2

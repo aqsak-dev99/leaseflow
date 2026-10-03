@@ -89,3 +89,11 @@ CELERY_TIMEZONE = TIME_ZONE
 LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "dashboard:home"
 LOGOUT_REDIRECT_URL = "accounts:login"
+
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+GROQ_API_KEY = env("GROQ_API_KEY", default="")
+GOOGLE_API_KEY = env("GOOGLE_API_KEY", default="")
+LLM_MODEL = env("LLM_MODEL", default="openai/gpt-oss-120b")
+EMBEDDING_MODEL = env("EMBEDDING_MODEL", default="models/gemini-embedding-001")
