@@ -6,3 +6,6 @@ celery
 redis
 gunicorn
 whitenoise
+langgraph
+langchain-groq
+langchain-google-genai
