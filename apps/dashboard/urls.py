@@ -6,5 +6,6 @@ app_name = "dashboard"
 
 urlpatterns = [
     path("", views.home, name="home"),
-    path("htmx-check/", views.htmx_check, name="htmx_check"),
+    path("chat/", views.chat, name="chat"),
+    path("chat/send/", views.chat_send, name="chat_send"),
 ]

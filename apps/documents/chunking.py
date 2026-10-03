@@ -1,5 +1,5 @@
 def split_text(text, size=500, overlap=100):
-    """Split text into overlapping chunks, breaking at spaces where possible."""
+    """Split text into overlapping chunks that start and end on word boundaries."""
     text = " ".join(text.split())
     chunks = []
     start = 0
@@ -15,4 +15,7 @@ def split_text(text, size=500, overlap=100):
         if end >= len(text):
             break
         start = end - overlap
+        next_space = text.find(" ", start, end)
+        if next_space != -1:
+            start = next_space + 1
     return chunks
