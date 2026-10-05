@@ -24,4 +24,10 @@
   </form>
   <p id="thinking" class="htmx-indicator muted">Working on it…</p>
 </div>
+<script>
+  document.getElementById("messages").addEventListener("click", function (event) {
+    var link = event.target.closest("a");
+    if (link) { link.target = "_blank"; link.rel = "noopener"; }
+  });
+</script>
 {% endblock %}

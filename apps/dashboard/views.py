@@ -6,6 +6,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import Avg, Sum
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
 from apps.accounts.models import User
@@ -175,6 +176,7 @@ def run_detail(request, run_id):
     return render(request, "dashboard/run_detail.html", context)
 
 
+@never_cache
 @login_required
 def chat(request):
     _require_tenant(request)
