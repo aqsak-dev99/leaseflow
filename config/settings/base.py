@@ -106,8 +106,11 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.billing.tasks.generate_monthly_invoices",
         "schedule": crontab(day_of_month="1", hour="6", minute="0"),
     },
-    "mark-overdue-invoices": {
-        "task": "apps.billing.tasks.mark_overdue_invoices",
+    "overdue-check-and-reminders": {
+        "task": "apps.agents.tasks.overdue_check",
         "schedule": crontab(hour="7", minute="0"),
     },
 }
+
+SITE_URL = env("SITE_URL", default="http://127.0.0.1:8000")
+DEFAULT_FROM_EMAIL = "LeaseFlow <no-reply@leaseflow.test>"

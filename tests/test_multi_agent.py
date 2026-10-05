@@ -41,6 +41,7 @@ def ali(db):
     [
         ("maintenance", "maintenance"),
         ("Lease", "lease"),
+        ("payment", "payment"),
         ("other", "other"),
         ("I am not sure", "other"),
     ],

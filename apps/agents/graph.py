@@ -10,14 +10,16 @@ from apps.core.ai import get_chat_model
 
 from .lease_agent import answer_lease_question
 from .maintenance_agent import run_maintenance_agent
+from .payment_agent import run_payment_agent
 from .text import text_of
 
 SUPERVISOR_PROMPT = (Path(__file__).parent / "prompts" / "supervisor.md").read_text()
 OUT_OF_SCOPE = (
-    "I can help with questions about your lease and building rules, and with reporting "
-    "or checking maintenance problems in your unit. What would you like to do?"
+    "I can help with questions about your lease and building rules, with reporting or "
+    "checking maintenance problems, and with your rent balance and payments. "
+    "What would you like to do?"
 )
-ROUTES = ("lease", "maintenance", "other")
+ROUTES = ("lease", "maintenance", "payment", "other")
 
 
 class ChatState(TypedDict, total=False):
@@ -68,6 +70,15 @@ def maintenance_node(state):
     )
 
 
+def payment_node(state):
+    return run_payment_agent(
+        user=state["user"],
+        text=state["text"],
+        history=state.get("history", []),
+        trace=state.get("trace"),
+    )
+
+
 def other_node(state):
     return {"answer": OUT_OF_SCOPE, "citations": []}
 
@@ -77,16 +88,14 @@ def build_graph():
     graph.add_node("supervisor", supervisor)
     graph.add_node("lease", lease_node)
     graph.add_node("maintenance", maintenance_node)
+    graph.add_node("payment", payment_node)
     graph.add_node("other", other_node)
     graph.add_edge(START, "supervisor")
     graph.add_conditional_edges(
-        "supervisor",
-        lambda state: state["route"],
-        {"lease": "lease", "maintenance": "maintenance", "other": "other"},
+        "supervisor", lambda state: state["route"], {route: route for route in ROUTES}
     )
-    graph.add_edge("lease", END)
-    graph.add_edge("maintenance", END)
-    graph.add_edge("other", END)
+    for route in ROUTES:
+        graph.add_edge(route, END)
     return graph.compile()
 
 

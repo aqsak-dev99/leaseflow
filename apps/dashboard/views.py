@@ -9,8 +9,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from apps.accounts.models import User
+from apps.agents import approvals as approval_services
 from apps.agents import services as agent_services
-from apps.agents.models import AgentRun
+from apps.agents.models import AgentRun, ApprovalRequest
+from apps.agents.triggers import run_overdue_check
 from apps.billing import services as billing_services
 from apps.billing.models import Invoice
 from apps.maintenance import services as maintenance_services
@@ -63,6 +65,9 @@ def _landlord_home(request):
         "tenants": User.objects.filter(organization=org, role=User.Role.TENANT).count(),
         "open_tickets": tickets.exclude(status=MaintenanceTicket.Status.RESOLVED).count(),
         "outstanding": billing_services.balance_for(request.user),
+        "pending_approvals": ApprovalRequest.objects.for_org(org)
+        .filter(status=ApprovalRequest.Status.PENDING)
+        .count(),
         "recent_tickets": maintenance_services.tickets_for(request.user)[:5],
         "recent_runs": AgentRun.objects.for_org(org).order_by("-id")[:5],
     }
@@ -254,3 +259,52 @@ def invoices_generate(request):
     created = billing_services.generate_invoices(organization=request.organization)
     messages.success(request, f"{created} new invoice(s) created for this month.")
     return redirect("dashboard:invoices")
+
+
+@login_required
+def approvals(request):
+    _require_landlord(request)
+    items = approval_services.requests_for(request.user)
+    context = {
+        "pending": items.filter(status=ApprovalRequest.Status.PENDING),
+        "decided": items.exclude(status=ApprovalRequest.Status.PENDING)[:20],
+    }
+    return render(request, "dashboard/approvals.html", context)
+
+
+@login_required
+@require_POST
+def approval_decide(request, request_id):
+    _require_landlord(request)
+    try:
+        if request.POST.get("action") == "approve":
+            decided = approval_services.approve(
+                user=request.user,
+                request_id=request_id,
+                subject=request.POST.get("subject"),
+                body=request.POST.get("body"),
+            )
+            if decided.kind == ApprovalRequest.Kind.REMINDER:
+                messages.success(request, "Approved. The reminder has been sent to the tenant.")
+            else:
+                messages.success(request, "Approved. The invoice has been waived.")
+        else:
+            approval_services.reject(
+                user=request.user, request_id=request_id, note=request.POST.get("note", "")
+            )
+            messages.success(request, "Rejected. Nothing was sent or changed.")
+    except PermissionDenied:
+        raise Http404 from None
+    except ValidationError as exc:
+        messages.error(request, " ".join(exc.messages))
+    return redirect("dashboard:approvals")
+
+
+@login_required
+@require_POST
+def overdue_check_now(request):
+    """Run the daily overdue check now, for this organization only."""
+    _require_landlord(request)
+    drafted = run_overdue_check(organization=request.organization, pause=2)
+    messages.success(request, f"{len(drafted)} new reminder(s) drafted for your approval.")
+    return redirect("dashboard:approvals")

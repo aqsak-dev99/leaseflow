@@ -142,3 +142,9 @@ form select, form textarea, form input[type="number"] { width: 100%; padding: 10
 body.gateway { background: #101828; }
 form label input[type="checkbox"] { width: auto; margin-right: 6px; }
 form label:has(input[type="checkbox"]) { font-weight: 400; }
+
+.status-approved { background: #d9f2e1; color: #17613a; }
+.status-rejected { background: #fbdcd9; color: #8f1d14; }
+a.stat-link { text-decoration: none; color: var(--text); }
+a.stat-link:hover { border-color: var(--primary); }
+.answer a { color: var(--primary); word-break: break-all; }

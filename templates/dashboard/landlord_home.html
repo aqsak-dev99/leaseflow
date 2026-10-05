@@ -8,6 +8,7 @@
   <div class="card stat"><span class="stat-number">{{ tenants }}</span><span class="muted">Tenants</span></div>
   <div class="card stat"><span class="stat-number">{{ open_tickets }}</span><span class="muted">Open tickets</span></div>
   <div class="card stat"><span class="stat-number">Rs. {{ outstanding|floatformat:"0g" }}</span><span class="muted">Rent outstanding</span></div>
+  <a class="card stat stat-link" href="{% url 'dashboard:approvals' %}"><span class="stat-number">{{ pending_approvals }}</span><span class="muted">Waiting for your approval</span></a>
 </div>
 
 <div class="card section">

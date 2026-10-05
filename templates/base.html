@@ -17,6 +17,7 @@
         <a href="{% url 'dashboard:properties' %}">Properties</a>
         <a href="{% url 'dashboard:tickets' %}">Tickets</a>
         <a href="{% url 'dashboard:invoices' %}">Invoices</a>
+        <a href="{% url 'dashboard:approvals' %}">Approvals</a>
         <a href="{% url 'dashboard:activity' %}">AI activity</a>
       {% elif user.is_authenticated %}
         <a href="{% url 'dashboard:home' %}">Home</a>

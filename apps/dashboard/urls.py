@@ -17,6 +17,11 @@ urlpatterns = [
         views.invoice_record_payment,
         name="invoice_record_payment",
     ),
+    path("approvals/", views.approvals, name="approvals"),
+    path("approvals/check-overdue/", views.overdue_check_now, name="overdue_check_now"),
+    path(
+        "approvals/<int:request_id>/decide/", views.approval_decide, name="approval_decide"
+    ),
     path("activity/", views.activity, name="activity"),
     path("runs/<int:run_id>/", views.run_detail, name="run_detail"),
     path("chat/", views.chat, name="chat"),

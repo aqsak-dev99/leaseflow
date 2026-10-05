@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AgentRun, Conversation, Message
+from .models import AgentRun, ApprovalRequest, Conversation, Message
 
 
 @admin.register(Conversation)
@@ -19,3 +19,9 @@ class MessageAdmin(admin.ModelAdmin):
 class AgentRunAdmin(admin.ModelAdmin):
     list_display = ("id", "trigger", "route", "status", "input_tokens", "latency_ms")
     list_filter = ("organization", "trigger", "route", "status")
+
+
+@admin.register(ApprovalRequest)
+class ApprovalRequestAdmin(admin.ModelAdmin):
+    list_display = ("id", "kind", "status", "invoice", "organization", "decided_at")
+    list_filter = ("organization", "kind", "status")

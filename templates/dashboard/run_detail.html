@@ -14,6 +14,7 @@
   </p>
   {% if question %}<p><strong>Tenant asked:</strong> {{ question.content }}</p>{% endif %}
   {% if reply %}<p><strong>Assistant replied:</strong> {{ reply.content|linebreaksbr }}</p>{% endif %}
+  {% for item in run.approval_requests.all %}<p><strong>Drafted for approval:</strong> {{ item.subject }} ({{ item.get_status_display|lower }})</p>{% endfor %}
   {% if run.error %}<p class="error"><strong>Error:</strong> {{ run.error }}</p>{% endif %}
 </div>
 

@@ -2,7 +2,7 @@
   <p class="question">{{ message.content }}</p>
 {% else %}
   <div class="answer">
-    <p>{{ message.content|linebreaksbr }}</p>
+    <p>{{ message.content|urlize|linebreaksbr }}</p>
     {% if message.citations %}
       <div class="citations">
         {% for citation in message.citations %}
