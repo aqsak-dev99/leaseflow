@@ -11,7 +11,7 @@
   </div>
   <p class="muted">Ask about your lease or building rules, or report a problem in your unit.</p>
   <div id="messages" class="messages">
-    {% for message in messages %}{% include "dashboard/_message.html" %}{% endfor %}
+    {% for message in chat_messages %}{% include "dashboard/_message.html" %}{% endfor %}
   </div>
   <form class="chat-form"
         hx-post="{% url 'dashboard:chat_send' %}"

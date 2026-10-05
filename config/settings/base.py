@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import environ
+from celery.schedules import crontab
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -97,3 +98,16 @@ GROQ_API_KEY = env("GROQ_API_KEY", default="")
 GOOGLE_API_KEY = env("GOOGLE_API_KEY", default="")
 LLM_MODEL = env("LLM_MODEL", default="openai/gpt-oss-120b")
 EMBEDDING_MODEL = env("EMBEDDING_MODEL", default="models/gemini-embedding-001")
+
+FAKE_GATEWAY_WEBHOOK_SECRET = env("FAKE_GATEWAY_WEBHOOK_SECRET", default="dev-only-webhook-secret")
+
+CELERY_BEAT_SCHEDULE = {
+    "generate-monthly-invoices": {
+        "task": "apps.billing.tasks.generate_monthly_invoices",
+        "schedule": crontab(day_of_month="1", hour="6", minute="0"),
+    },
+    "mark-overdue-invoices": {
+        "task": "apps.billing.tasks.mark_overdue_invoices",
+        "schedule": crontab(hour="7", minute="0"),
+    },
+}

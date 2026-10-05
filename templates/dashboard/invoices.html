@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{% if is_landlord %}Invoices{% else %}Rent{% endif %} · LeaseFlow{% endblock %}
+{% block content %}
+<h1>{% if is_landlord %}Invoices{% else %}Your rent{% endif %}</h1>
+<div class="stats">
+  <div class="card stat"><span class="stat-number">Rs. {{ balance|floatformat:"0g" }}</span><span class="muted">{% if is_landlord %}Outstanding{% else %}You owe{% endif %}</span></div>
+  <div class="card stat"><span class="stat-number">{{ overdue }}</span><span class="muted">Overdue invoices</span></div>
+</div>
+{% if is_landlord %}
+  <form method="post" action="{% url 'dashboard:invoices_generate' %}" class="section">
+    {% csrf_token %}
+    <button class="btn" type="submit">Create this month's invoices</button>
+  </form>
+{% endif %}
+<div class="card">
+  <table class="table">
+    <thead>
+      <tr><th>Month</th><th>Unit</th>{% if is_landlord %}<th>Tenant</th>{% endif %}<th>Amount</th><th>Due</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for invoice in invoices %}
+        <tr>
+          <td>{{ invoice.period|date:"F Y" }}</td>
+          <td>{{ invoice.lease.unit.unit_number }}</td>
+          {% if is_landlord %}<td>{{ invoice.lease.tenant.get_full_name|default:invoice.lease.tenant.email }}</td>{% endif %}
+          <td>Rs. {{ invoice.amount|floatformat:"0g" }}</td>
+          <td>{{ invoice.due_date|date:"j M Y" }}</td>
+          <td><span class="badge status-{{ invoice.status }}">{{ invoice.get_status_display }}</span></td>
+          <td>
+            {% if invoice.is_unpaid %}
+              {% if is_landlord %}
+                <form method="post" action="{% url 'dashboard:invoice_record_payment' invoice.id %}" class="inline-form">
+                  {% csrf_token %}
+                  <input type="text" name="reference" placeholder="Reference (optional)" maxlength="100">
+                  <button class="link" type="submit">Record payment</button>
+                </form>
+              {% else %}
+                <form method="post" action="{% url 'dashboard:invoice_pay' invoice.id %}">
+                  {% csrf_token %}
+                  <button class="btn btn-small" type="submit">Pay now</button>
+                </form>
+              {% endif %}
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7" class="muted">No invoices yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

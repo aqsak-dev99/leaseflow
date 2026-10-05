@@ -126,3 +126,19 @@ h2 { margin-top: 0; font-size: 1.15rem; }
 .error { color: #8f1d14; }
 .narrow-form { max-width: 480px; }
 form select, form textarea, form input[type="number"] { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 1rem; font-family: inherit; }
+
+.status-paid, .status-succeeded { background: #d9f2e1; color: #17613a; }
+.status-issued, .status-pending { background: #dbe7ff; color: #1d3f99; }
+.status-overdue, .status-failed { background: #fbdcd9; color: #8f1d14; }
+.status-waived { background: #e9edf2; color: var(--muted); }
+
+.notice { padding: 10px 14px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); }
+.notice-success { border-color: #9bd4b0; background: #edf9f1; }
+.notice-error { border-color: #f0a8a1; background: #fdf0ee; }
+
+.btn-small { padding: 6px 12px; font-size: 0.9rem; }
+.inline-form { display: flex; gap: 8px; align-items: center; }
+.inline-form input { padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius); width: 170px; }
+body.gateway { background: #101828; }
+form label input[type="checkbox"] { width: auto; margin-right: 6px; }
+form label:has(input[type="checkbox"]) { font-weight: 400; }

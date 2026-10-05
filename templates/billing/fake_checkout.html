@@ -1,0 +1,33 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FakePay checkout</title>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body class="gateway">
+  <main class="container">
+    <div class="card narrow">
+      <p class="badge">FakePay · test gateway · no real money moves</p>
+      <h1>Pay Rs. {{ payment.amount|floatformat:"0g" }}</h1>
+      <p class="muted">
+        Rent for {{ payment.invoice.period|date:"F Y" }},
+        {{ payment.invoice.lease.unit.property.name }} unit {{ payment.invoice.lease.unit.unit_number }}
+      </p>
+      {% if payment.status == "pending" %}
+        <form method="post">
+          {% csrf_token %}
+          <p><label><input type="checkbox" name="duplicate" value="1"> Send the result twice (tests duplicate protection)</label></p>
+          <button class="btn" type="submit" name="outcome" value="success">Pay now</button>
+          <button class="link" type="submit" name="outcome" value="fail">Simulate a failed payment</button>
+        </form>
+      {% else %}
+        <p>This payment is already {{ payment.get_status_display|lower }}.</p>
+        <p><a href="{% url 'dashboard:invoices' %}">Back to LeaseFlow</a></p>
+      {% endif %}
+    </div>
+  </main>
+</body>
+</html>

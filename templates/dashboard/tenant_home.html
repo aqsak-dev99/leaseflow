@@ -11,6 +11,7 @@
   {% else %}
     <p class="muted">You don't have an active lease on file.</p>
   {% endif %}
+  <p>{% if balance %}You currently owe <strong>Rs. {{ balance|floatformat:"0g" }}</strong>. <a href="{% url 'dashboard:invoices' %}">View and pay</a>{% else %}You have nothing to pay right now.{% endif %}</p>
   <p><a class="btn" href="{% url 'dashboard:chat' %}">Open the assistant</a></p>
 </div>
 <div class="card section">

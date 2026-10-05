@@ -4,8 +4,12 @@ import time
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.utils import timezone
 
 from apps.accounts.models import Organization, User
+from apps.billing import services as billing_services
+from apps.billing.models import Invoice
+from apps.billing.providers import get_provider
 from apps.documents.models import Document
 from apps.documents.sample_leases import build_lease_pdf, build_policy_pdf
 from apps.documents.services import process_document
@@ -146,6 +150,7 @@ class Command(BaseCommand):
         with transaction.atomic():
             for data in DEMO:
                 self.create_organization(data)
+            self.seed_invoices()
         self.stdout.write(self.style.SUCCESS("Demo data ready."))
         self.stdout.write(f"All demo accounts use the password: {PASSWORD}")
 
@@ -155,6 +160,38 @@ class Command(BaseCommand):
                 count = process_document(document.id)
                 self.stdout.write(f"Processed {document.title}: {count} chunks")
                 time.sleep(1)
+
+    def seed_invoices(self):
+        """Last month: the first tenant in each building is overdue, the second has paid."""
+        today = timezone.localdate()
+        this_month = billing_services.month_start(today)
+        last_month = billing_services.month_start(this_month - datetime.timedelta(days=1))
+        overdue_emails = {data["tenants"][0]["email"] for data in DEMO}
+        demo_slugs = [data["slug"] for data in DEMO]
+        leases = Lease.objects.filter(organization__slug__in=demo_slugs).select_related("tenant")
+        for lease in leases:
+            invoice, created = Invoice.objects.get_or_create(
+                lease=lease,
+                period=last_month,
+                defaults={
+                    "organization": lease.organization,
+                    "amount": lease.rent_amount,
+                    "due_date": billing_services.due_date_for(lease, last_month),
+                    "status": Invoice.Status.OVERDUE,
+                },
+            )
+            if created and lease.tenant.email not in overdue_emails:
+                payment = get_provider("manual").start(invoice, reference="Bank transfer")
+                billing_services.settle(payment)
+            Invoice.objects.get_or_create(
+                lease=lease,
+                period=this_month,
+                defaults={
+                    "organization": lease.organization,
+                    "amount": lease.rent_amount,
+                    "due_date": billing_services.due_date_for(lease, this_month),
+                },
+            )
 
     def create_organization(self, data):
         org, _ = Organization.objects.get_or_create(

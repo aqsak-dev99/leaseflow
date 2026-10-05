@@ -1,7 +1,8 @@
 import json
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import Avg, Sum
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -10,6 +11,8 @@ from django.views.decorators.http import require_POST
 from apps.accounts.models import User
 from apps.agents import services as agent_services
 from apps.agents.models import AgentRun
+from apps.billing import services as billing_services
+from apps.billing.models import Invoice
 from apps.maintenance import services as maintenance_services
 from apps.maintenance.models import MaintenanceTicket
 from apps.properties.models import Lease, Property, Unit
@@ -42,8 +45,12 @@ def _tenant_home(request):
         .select_related("unit", "unit__property")
         .first()
     )
-    tickets = maintenance_services.tickets_for(request.user)[:5]
-    return render(request, "dashboard/tenant_home.html", {"lease": lease, "tickets": tickets})
+    context = {
+        "lease": lease,
+        "tickets": maintenance_services.tickets_for(request.user)[:5],
+        "balance": billing_services.balance_for(request.user),
+    }
+    return render(request, "dashboard/tenant_home.html", context)
 
 
 def _landlord_home(request):
@@ -55,6 +62,7 @@ def _landlord_home(request):
         "vacant": units.filter(status=Unit.Status.VACANT).count(),
         "tenants": User.objects.filter(organization=org, role=User.Role.TENANT).count(),
         "open_tickets": tickets.exclude(status=MaintenanceTicket.Status.RESOLVED).count(),
+        "outstanding": billing_services.balance_for(request.user),
         "recent_tickets": maintenance_services.tickets_for(request.user)[:5],
         "recent_runs": AgentRun.objects.for_org(org).order_by("-id")[:5],
     }
@@ -166,7 +174,8 @@ def run_detail(request, run_id):
 def chat(request):
     _require_tenant(request)
     conversation = agent_services.current_conversation(request.user)
-    return render(request, "dashboard/chat.html", {"messages": conversation.messages.all()})
+    context = {"chat_messages": conversation.messages.all()}
+    return render(request, "dashboard/chat.html", context)
 
 
 @login_required
@@ -176,8 +185,8 @@ def chat_send(request):
     text = request.POST.get("question", "").strip()[:500]
     if not text:
         return HttpResponse("")
-    messages = agent_services.handle_message(user=request.user, text=text)
-    return render(request, "dashboard/_chat_exchange.html", {"messages": messages})
+    exchange = agent_services.handle_message(user=request.user, text=text)
+    return render(request, "dashboard/_chat_exchange.html", {"chat_messages": exchange})
 
 
 @login_required
@@ -186,3 +195,62 @@ def chat_new(request):
     _require_tenant(request)
     agent_services.start_conversation(request.user)
     return redirect("dashboard:chat")
+
+
+@login_required
+def invoices(request):
+    items = billing_services.invoices_for(request.user)
+    context = {
+        "invoices": items[:100],
+        "balance": billing_services.balance_for(request.user),
+        "overdue": items.filter(status=Invoice.Status.OVERDUE).count(),
+        "is_landlord": request.user.role == "landlord",
+    }
+    return render(request, "dashboard/invoices.html", context)
+
+
+@login_required
+@require_POST
+def invoice_pay(request, invoice_id):
+    """A tenant starts paying: we create the payment and send them to the gateway."""
+    _require_tenant(request)
+    try:
+        _, checkout_url = billing_services.start_gateway_payment(
+            user=request.user, invoice_id=invoice_id
+        )
+    except PermissionDenied:
+        raise Http404 from None
+    except ValidationError as exc:
+        messages.error(request, " ".join(exc.messages))
+        return redirect("dashboard:invoices")
+    return redirect(checkout_url)
+
+
+@login_required
+@require_POST
+def invoice_record_payment(request, invoice_id):
+    """A landlord records cash or a bank transfer."""
+    _require_landlord(request)
+    try:
+        billing_services.record_manual_payment(
+            user=request.user,
+            invoice_id=invoice_id,
+            reference=request.POST.get("reference", ""),
+        )
+    except PermissionDenied:
+        raise Http404 from None
+    except ValidationError as exc:
+        messages.error(request, " ".join(exc.messages))
+    else:
+        messages.success(request, "Payment recorded.")
+    return redirect("dashboard:invoices")
+
+
+@login_required
+@require_POST
+def invoices_generate(request):
+    """Create this month's invoices now, without waiting for the scheduled job."""
+    _require_landlord(request)
+    created = billing_services.generate_invoices(organization=request.organization)
+    messages.success(request, f"{created} new invoice(s) created for this month.")
+    return redirect("dashboard:invoices")
