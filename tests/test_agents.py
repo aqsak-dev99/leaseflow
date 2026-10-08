@@ -14,14 +14,16 @@ def fake_chunk(title, page, text):
 
 
 class FakeModel:
-    def __init__(self, reply):
-        self.reply = reply
-        self.messages = None
+    """Gives the prepared replies in order: first the answer, then the verifier's verdict."""
+
+    def __init__(self, *replies):
+        self.replies = list(replies)
+        self.calls = []
 
     def invoke(self, messages):
-        self.messages = messages
+        self.calls.append(messages)
         return SimpleNamespace(
-            content=self.reply, usage_metadata={"input_tokens": 120, "output_tokens": 15}
+            content=self.replies.pop(0), usage_metadata={"input_tokens": 120, "output_tokens": 15}
         )
 
 
@@ -39,7 +41,7 @@ def test_lease_agent_answers_with_page_citation_and_records_a_trace(monkeypatch)
         fake_chunk("Lease agreement, unit A1", 2, "Notice period is 30 days."),
         fake_chunk("Lease agreement, unit A1", 3, "Pets are not allowed."),
     ]
-    model = FakeModel("You must give 30 days written notice [1].")
+    model = FakeModel("You must give 30 days written notice [1].", "SUPPORTED")
     monkeypatch.setattr(lease_agent, "search_chunks", lambda **kwargs: chunks)
     monkeypatch.setattr(lease_agent, "get_chat_model", lambda: model)
     ali = User.objects.get(email="ali@alpha.test")
@@ -51,10 +53,15 @@ def test_lease_agent_answers_with_page_citation_and_records_a_trace(monkeypatch)
 
     assert "30 days" in result["answer"]
     assert [(c["number"], c["page"]) for c in result["citations"]] == [(1, 2)]
-    assert "Notice period is 30 days." in model.messages[1][1]
-    assert [step["type"] for step in trace.steps] == ["retrieval", "model"]
-    assert trace.input_tokens == 120
-    assert trace.output_tokens == 15
+    assert "Notice period is 30 days." in model.calls[0][1][1]
+    assert [step["name"] for step in trace.steps] == [
+        "search_lease_documents",
+        "lease_agent",
+        "verifier",
+    ]
+    assert trace.steps[-1]["detail"] == {"verdict": "supported"}
+    assert trace.input_tokens == 240
+    assert trace.output_tokens == 30
 
 
 @pytest.mark.django_db

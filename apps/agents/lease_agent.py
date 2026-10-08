@@ -1,6 +1,5 @@
-"""The lease agent: retrieve the relevant lease text, then answer with citations."""
+"""The lease agent: retrieve the lease text, answer with citations, then verify."""
 
-import re
 import time
 from pathlib import Path
 from typing import TypedDict
@@ -12,6 +11,7 @@ from apps.documents.retrieval import search_chunks
 from apps.properties.models import Lease
 
 from .text import text_of
+from .verifier import SUPPORTED, cited_numbers, verify_answer
 
 PROMPT = (Path(__file__).parent / "prompts" / "lease_agent.md").read_text()
 NOT_FOUND = "I can't find that in your lease documents."
@@ -75,7 +75,6 @@ def generate(state):
     if trace is not None:
         trace.add_model_call("lease_agent", started, reply)
 
-    cited = sorted({int(n) for n in re.findall(r"\[(\d+)\]", answer)})
     citations = [
         {
             "number": number,
@@ -83,19 +82,38 @@ def generate(state):
             "page": chunks[number - 1].page_number,
             "text": chunks[number - 1].text,
         }
-        for number in cited
+        for number in cited_numbers(answer)
         if 1 <= number <= len(chunks)
     ]
     return {"answer": answer, "citations": citations}
+
+
+def verify(state):
+    """Show the answer only if a second check confirms its sources support it."""
+    if not state["chunks"]:
+        return {}
+    verdict = verify_answer(
+        question=state["question"],
+        answer=state["answer"],
+        citations=state["citations"],
+        source_count=len(state["chunks"]),
+        model=get_chat_model(),
+        trace=state.get("trace"),
+    )
+    if verdict != SUPPORTED:
+        return {"answer": NOT_FOUND, "citations": []}
+    return {}
 
 
 def build_graph():
     graph = StateGraph(LeaseState)
     graph.add_node("retrieve", retrieve)
     graph.add_node("generate", generate)
+    graph.add_node("verify", verify)
     graph.add_edge(START, "retrieve")
     graph.add_edge("retrieve", "generate")
-    graph.add_edge("generate", END)
+    graph.add_edge("generate", "verify")
+    graph.add_edge("verify", END)
     return graph.compile()
 
 
