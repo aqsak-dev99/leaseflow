@@ -1,6 +1,6 @@
 <table class="table">
   <thead>
-    <tr><th>Run</th><th>When</th><th>Trigger</th><th>Route</th><th>Status</th><th>Tokens in / out</th><th>Time</th></tr>
+    <tr><th>Run</th><th>When</th><th>Trigger</th><th>Route</th><th>Status</th><th>Tokens in / out</th><th>Est. cost</th><th>Time</th></tr>
   </thead>
   <tbody>
     {% for run in runs %}
@@ -11,10 +11,11 @@
         <td><span class="badge">{{ run.route|default:"none" }}</span></td>
         <td><span class="badge status-{{ run.status }}">{{ run.get_status_display }}</span></td>
         <td>{{ run.input_tokens }} / {{ run.output_tokens }}</td>
+        <td>${{ run.cost|floatformat:4 }}</td>
         <td>{{ run.latency_ms }} ms</td>
       </tr>
     {% empty %}
-      <tr><td colspan="7" class="muted">No agent runs yet.</td></tr>
+      <tr><td colspan="8" class="muted">No agent runs yet.</td></tr>
     {% endfor %}
   </tbody>
 </table>

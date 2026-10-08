@@ -1,9 +1,10 @@
 import json
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db.models import Avg, Sum
+from django.db.models import Avg, Count, Sum
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import never_cache
@@ -12,6 +13,7 @@ from django.views.decorators.http import require_POST
 from apps.accounts.models import User
 from apps.agents import approvals as approval_services
 from apps.agents import services as agent_services
+from apps.agents.costs import estimate_cost
 from apps.agents.models import AgentRun, ApprovalRequest
 from apps.agents.triggers import run_overdue_check
 from apps.billing import services as billing_services
@@ -146,11 +148,25 @@ def activity(request):
         input_tokens=Sum("input_tokens"),
         output_tokens=Sum("output_tokens"),
         latency=Avg("latency_ms"),
+        cost=Sum("cost"),
+    )
+    by_route = (
+        runs.values("route")
+        .annotate(
+            runs=Count("id"),
+            input_tokens=Sum("input_tokens"),
+            output_tokens=Sum("output_tokens"),
+            cost=Sum("cost"),
+        )
+        .order_by("-cost")
     )
     context = {
         "runs": runs.select_related("conversation__user").order_by("-id")[:50],
         "count": runs.count(),
         "totals": totals,
+        "by_route": by_route,
+        "input_price": settings.LLM_INPUT_PRICE,
+        "output_price": settings.LLM_OUTPUT_PRICE,
     }
     return render(request, "dashboard/activity.html", context)
 
@@ -169,7 +185,11 @@ def run_detail(request, run_id):
             reply.conversation.messages.filter(role="user", id__lt=reply.id).order_by("-id").first()
         )
     steps = [
-        {**step, "detail_text": json.dumps(step.get("detail", {}), indent=2, default=str)}
+        {
+            **step,
+            "detail_text": json.dumps(step.get("detail", {}), indent=2, default=str),
+            "cost": estimate_cost(step.get("input_tokens"), step.get("output_tokens")),
+        }
         for step in run.steps
     ]
     context = {"run": run, "steps": steps, "question": question, "reply": reply}

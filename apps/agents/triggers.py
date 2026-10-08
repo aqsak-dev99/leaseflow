@@ -10,6 +10,7 @@ from apps.billing import services as billing_services
 from apps.billing.models import Invoice
 
 from . import approvals
+from .costs import estimate_cost
 from .models import AgentRun, ApprovalRequest
 from .payment_agent import draft_reminder, template_reminder
 from .tracing import Trace
@@ -54,6 +55,7 @@ def draft_overdue_reminder(invoice):
         status=status,
         input_tokens=trace.input_tokens,
         output_tokens=trace.output_tokens,
+        cost=estimate_cost(trace.input_tokens, trace.output_tokens),
         latency_ms=trace.elapsed_ms(),
         steps=trace.steps,
         error=error,

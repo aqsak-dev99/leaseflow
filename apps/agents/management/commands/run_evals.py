@@ -7,6 +7,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
 from apps.accounts.models import User
+from apps.agents.costs import estimate_cost
 from apps.agents.evals.cases import CASES
 from apps.agents.evals.runner import run_case
 from apps.documents.models import DocumentChunk
@@ -86,6 +87,7 @@ def summary_lines(results):
     tokens_out = sum(result.output_tokens for result in results)
     lines.append(f"{'Total':<9} {passed}/{len(results)} ({100 * passed // len(results)}%)")
     lines.append(f"Tokens    {tokens_in:,} in, {tokens_out:,} out")
+    lines.append(f"Est. cost ${estimate_cost(tokens_in, tokens_out):.4f}")
     return lines
 
 

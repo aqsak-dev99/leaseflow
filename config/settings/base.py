@@ -98,6 +98,9 @@ GROQ_API_KEY = env("GROQ_API_KEY", default="")
 GOOGLE_API_KEY = env("GOOGLE_API_KEY", default="")
 LLM_MODEL = env("LLM_MODEL", default="openai/gpt-oss-120b")
 EMBEDDING_MODEL = env("EMBEDDING_MODEL", default="models/gemini-embedding-001")
+# The chat model's listed price in US dollars per million tokens, used for cost estimates.
+LLM_INPUT_PRICE = env.float("LLM_INPUT_PRICE", default=0.15)
+LLM_OUTPUT_PRICE = env.float("LLM_OUTPUT_PRICE", default=0.60)
 
 FAKE_GATEWAY_WEBHOOK_SECRET = env("FAKE_GATEWAY_WEBHOOK_SECRET", default="dev-only-webhook-secret")
 

@@ -10,7 +10,7 @@
   </p>
   <p class="muted">
     {{ run.created_at|date:"j M Y, H:i:s" }}{% if run.conversation %} · {{ run.conversation.user.email }}{% endif %}
-    · {{ run.input_tokens }} tokens in, {{ run.output_tokens }} out · {{ run.latency_ms }} ms
+    · {{ run.input_tokens }} tokens in, {{ run.output_tokens }} out · estimated cost ${{ run.cost|floatformat:6 }} · {{ run.latency_ms }} ms
   </p>
   {% if question %}<p><strong>Tenant asked:</strong> {{ question.content }}</p>{% endif %}
   {% if reply %}<p><strong>Assistant replied:</strong> {{ reply.content|linebreaksbr }}</p>{% endif %}
@@ -25,7 +25,7 @@
       <li>
         <strong>{{ step.name }}</strong>
         <span class="badge">{{ step.type }}</span>
-        <span class="muted">{{ step.ms }} ms{% if step.input_tokens or step.output_tokens %} · {{ step.input_tokens }} in, {{ step.output_tokens }} out{% endif %}</span>
+        <span class="muted">{{ step.ms }} ms{% if step.input_tokens or step.output_tokens %} · {{ step.input_tokens }} in, {{ step.output_tokens }} out · ${{ step.cost|floatformat:6 }}{% endif %}</span>
         {% if step.detail %}<pre>{{ step.detail_text }}</pre>{% endif %}
       </li>
     {% empty %}

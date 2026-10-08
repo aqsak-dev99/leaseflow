@@ -7,6 +7,32 @@
   <div class="card stat"><span class="stat-number">{{ totals.input_tokens|default:0 }}</span><span class="muted">Input tokens</span></div>
   <div class="card stat"><span class="stat-number">{{ totals.output_tokens|default:0 }}</span><span class="muted">Output tokens</span></div>
   <div class="card stat"><span class="stat-number">{{ totals.latency|default:0|floatformat:0 }} ms</span><span class="muted">Average time</span></div>
+  <div class="card stat"><span class="stat-number">${{ totals.cost|default:0|floatformat:4 }}</span><span class="muted">Estimated cost</span></div>
+</div>
+<div class="card section">
+  <h2>Cost by assistant</h2>
+  <table class="table">
+    <thead>
+      <tr><th>Assistant</th><th>Runs</th><th>Tokens in / out</th><th>Estimated cost</th></tr>
+    </thead>
+    <tbody>
+      {% for row in by_route %}
+        <tr>
+          <td><span class="badge">{{ row.route|default:"none" }}</span></td>
+          <td>{{ row.runs }}</td>
+          <td>{{ row.input_tokens }} / {{ row.output_tokens }}</td>
+          <td>${{ row.cost|floatformat:4 }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4" class="muted">No agent runs yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="muted">
+    Estimated at the chat model's listed price of ${{ input_price|floatformat:2 }} per million input tokens
+    and ${{ output_price|floatformat:2 }} per million output tokens. Document search (embedding) calls are
+    not included.
+  </p>
 </div>
 <div class="card section">
   {% include "dashboard/_run_table.html" %}
