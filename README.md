@@ -55,9 +55,11 @@ The login page has one-click **Demo landlord** and **Demo tenant** buttons. The 
 | --- | --- |
 | ![Login](docs/screenshots/login.jpg) | <img src="docs/screenshots/tenant-home-dark.png" alt="Tenant home in dark mode" width="280"> |
 
-| Animated splash screen | |
+| Splash screen, light mode | Splash screen, dark mode |
 | --- | --- |
-| ![Splash screen](docs/screenshots/splash.jpg) | The logo draws itself line by line with a gold glow, then the app opens on the login page. It plays once per browser tab. |
+| ![Splash screen in light mode](docs/screenshots/splash.jpg) | ![Splash screen in dark mode](docs/screenshots/splash-dark.jpg) |
+
+The logo draws itself line by line with a gold glow, then the app opens on the login page. It plays once per browser tab.
 
 ## How the assistant works
 
