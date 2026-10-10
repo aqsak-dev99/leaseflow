@@ -115,6 +115,27 @@ DEMO = [
 ]
 
 
+def lease_context(data, item):
+    """The details printed into one demo tenant's lease PDF."""
+    name, address, city = data["property"]
+    first, last = item["name"]
+    rent = item["rent"]
+    return {
+        "landlord_name": data["name"],
+        "tenant_name": f"{first} {last}",
+        "unit_number": item["unit"],
+        "property_name": name,
+        "address": address,
+        "city": city,
+        "start_date": "1 January 2026",
+        "end_date": "31 December 2026",
+        "rent": f"{rent:,}",
+        "deposit": f"{rent * 2:,}",
+        "due_day": 5,
+        **item["terms"],
+    }
+
+
 def get_or_create_user(email, organization, role, first_name="", last_name=""):
     user = User.objects.filter(email=email).first()
     if user is None:
@@ -227,20 +248,7 @@ class Command(BaseCommand):
                 },
             )
             if not lease.documents.exists():
-                context = {
-                    "landlord_name": org.name,
-                    "tenant_name": f"{first} {last}",
-                    "unit_number": item["unit"],
-                    "property_name": name,
-                    "address": address,
-                    "city": city,
-                    "start_date": "1 January 2026",
-                    "end_date": "31 December 2026",
-                    "rent": f"{rent:,}",
-                    "deposit": f"{rent * 2:,}",
-                    "due_day": 5,
-                    **item["terms"],
-                }
+                context = lease_context(data, item)
                 save_document(
                     org,
                     lease,

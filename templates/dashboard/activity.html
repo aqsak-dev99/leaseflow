@@ -4,16 +4,19 @@
 <div class="page-head">
   <div>
     <h1>AI activity</h1>
-    <p class="muted">Every time an assistant runs, the route it took, the tools it used and what it cost are recorded here.</p>
+    <p class="muted">Every time an assistant runs, the route it took and the tools it used are recorded here.</p>
   </div>
 </div>
 <div class="stats">
   <div class="card stat"><span class="stat-label">Agent runs</span><span class="stat-number">{{ count }}</span></div>
+  {% if show_costs %}
   <div class="card stat"><span class="stat-label">Input tokens</span><span class="stat-number">{{ totals.input_tokens|default:0 }}</span></div>
   <div class="card stat"><span class="stat-label">Output tokens</span><span class="stat-number">{{ totals.output_tokens|default:0 }}</span></div>
+  {% endif %}
   <div class="card stat"><span class="stat-label">Average time</span><span class="stat-number">{{ totals.latency|default:0|floatformat:0 }} ms</span></div>
-  <div class="card card-ink stat"><span class="stat-label">Estimated cost</span><span class="stat-number">${{ totals.cost|default:0|floatformat:4 }}</span></div>
+  {% if show_costs %}<div class="card card-ink stat"><span class="stat-label">Estimated cost</span><span class="stat-number">${{ totals.cost|default:0|floatformat:4 }}</span></div>{% endif %}
 </div>
+{% if show_costs %}
 <div class="card section">
   <div class="card-head"><h2>Cost by assistant</h2></div>
   <div class="table-wrap">
@@ -41,6 +44,7 @@
     not included.
   </p>
 </div>
+{% endif %}
 <div class="card section">
   <div class="card-head"><h2>All runs</h2><span class="muted">Select a run to see each step</span></div>
   {% include "dashboard/_run_table.html" %}

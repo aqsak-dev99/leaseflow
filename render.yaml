@@ -1,0 +1,35 @@
+# Render reads this file to create the service: New > Blueprint > pick this repository.
+# One free web service runs the whole app. Neon (database) and Upstash (Redis) stay as they are.
+services:
+  - type: web
+    name: leaseflow
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: bash scripts/render-build.sh
+    startCommand: gunicorn config.wsgi:application --workers 1 --threads 8 --timeout 300 --bind 0.0.0.0:$PORT
+    healthCheckPath: /healthz/
+    autoDeployTrigger: commit
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.3"
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.prod
+      - key: DEMO_MODE
+        value: "True"
+      # Random values Render makes up once and keeps.
+      - key: SECRET_KEY
+        generateValue: true
+      - key: CRON_SECRET
+        generateValue: true
+      - key: FAKE_GATEWAY_WEBHOOK_SECRET
+        generateValue: true
+      # Secrets you paste in when Render asks for them. They are never stored in the repository.
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false

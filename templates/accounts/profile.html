@@ -62,12 +62,16 @@
         <span><strong>Password</strong><span class="muted">Change the password you log in with</span></span>
         <span class="accordion-mark">{% icon "plus" 18 %}</span>
       </summary>
+      {% if locked %}
+        <p class="form muted">This is a shared demo account, so its password cannot be changed.</p>
+      {% else %}
       <form method="post" class="form" novalidate>
         {% csrf_token %}
         <input type="hidden" name="section" value="password">
         {{ forms.password.as_div }}
         <button class="btn" type="submit">Change password</button>
       </form>
+      {% endif %}
     </details>
   </div>
 </div>

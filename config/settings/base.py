@@ -119,3 +119,13 @@ CELERY_BEAT_SCHEDULE = {
 
 SITE_URL = env("SITE_URL", default="http://127.0.0.1:8000")
 DEFAULT_FROM_EMAIL = "LeaseFlow <no-reply@leaseflow.test>"
+
+# A public demo: the sample accounts are offered on the login page and their
+# passwords cannot be changed, so one visitor cannot lock the next one out.
+DEMO_MODE = env.bool("DEMO_MODE", default=False)
+DEMO_EMAIL_DOMAINS = ("alpha.test", "beta.test")
+
+# Lets a scheduler outside the app (a GitHub Actions cron) start the daily jobs.
+# Empty means the jobs address is switched off.
+CRON_SECRET = env("CRON_SECRET", default="")
+

@@ -5,7 +5,7 @@
       <span class="dot{% if step.state == 'done' %} dot-done{% elif step.state == 'bad' %} dot-bad{% endif %}">{% if step.state == "done" %}{% icon "check" 14 %}{% else %}{{ forloop.counter }}{% endif %}</span>
       <div class="step-title">{{ step.title }}</div>
       {% if detailed %}
-        <div class="step-meta"><span class="code">{{ step.name }}</span> {{ step.type }} · {{ step.ms }} ms{% if step.input_tokens or step.output_tokens %} · {{ step.input_tokens }} in, {{ step.output_tokens }} out · ${{ step.cost|floatformat:6 }}{% endif %}</div>
+        <div class="step-meta"><span class="code">{{ step.name }}</span> {{ step.type }} · {{ step.ms }} ms{% if show_costs %}{% if step.input_tokens or step.output_tokens %} · {{ step.input_tokens }} in, {{ step.output_tokens }} out · ${{ step.cost|floatformat:6 }}{% endif %}{% endif %}</div>
         {% if step.note %}<div class="step-meta">{{ step.note }}</div>{% endif %}
         {% if step.detail %}
           <details>

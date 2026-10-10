@@ -75,8 +75,8 @@
       <p><strong>{% if latest_question %}{{ latest_run.conversation.user.first_name|default:"Tenant" }} asked: {{ latest_question.content|truncatechars:90 }}{% else %}{{ latest_run.get_trigger_display }} run on the {{ latest_run.route|default:"other" }} route{% endif %}</strong></p>
       {% include "dashboard/_steps.html" with steps=latest_steps detailed=False %}
       <div class="run-foot">
-        <span>{{ latest_run.input_tokens }} in, {{ latest_run.output_tokens }} out</span>
-        <span>${{ latest_run.cost|floatformat:6 }}</span>
+        <span>{{ latest_run.get_status_display }}</span>
+        {% if show_costs %}<span>{{ latest_run.input_tokens }} in, {{ latest_run.output_tokens }} out · ${{ latest_run.cost|floatformat:6 }}</span>{% endif %}
         <span>{{ latest_run.latency_ms }} ms</span>
       </div>
     {% else %}

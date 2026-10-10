@@ -1,7 +1,7 @@
 <div class="table-wrap">
 <table class="table stackable">
   <thead>
-    <tr><th>Run</th><th>When</th><th>Trigger</th><th>Route</th><th>Status</th><th>Tokens in / out</th><th>Est. cost</th><th>Time</th></tr>
+    <tr><th>Run</th><th>When</th><th>Trigger</th><th>Route</th><th>Status</th>{% if show_costs %}<th>Tokens in / out</th><th>Est. cost</th>{% endif %}<th>Time</th></tr>
   </thead>
   <tbody>
     {% for run in runs %}
@@ -11,8 +11,10 @@
         <td data-label="Trigger">{{ run.get_trigger_display }}</td>
         <td data-label="Route"><span class="badge">{{ run.route|default:"none" }}</span></td>
         <td data-label="Status"><span class="badge status-{{ run.status }}">{{ run.get_status_display }}</span></td>
+        {% if show_costs %}
         <td data-label="Tokens in / out">{{ run.input_tokens }} / {{ run.output_tokens }}</td>
         <td data-label="Est. cost">${{ run.cost|floatformat:4 }}</td>
+        {% endif %}
         <td data-label="Time">{{ run.latency_ms }} ms</td>
       </tr>
     {% empty %}

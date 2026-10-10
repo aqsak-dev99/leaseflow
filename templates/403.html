@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block title %}Not allowed · LeaseFlow{% endblock %}
+{% block content %}
+<div class="card section narrow empty">
+  {% icon "alert" 30 %}
+  <h1>Not allowed</h1>
+  <p class="muted">Your account does not have access to that page.</p>
+  <a class="btn" href="/">Back to the start</a>
+</div>
+{% endblock %}

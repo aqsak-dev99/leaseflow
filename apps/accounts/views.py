@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, update_session_auth_hash
 from django.contrib.auth import views as auth_views
@@ -39,6 +40,7 @@ class PortalLoginView(auth_views.LoginView):
         portal = self.portal()
         context["portal"] = portal
         context["portal_info"] = PORTALS[portal]
+        context["demo_mode"] = settings.DEMO_MODE
         return context
 
     def form_valid(self, form):
@@ -61,6 +63,12 @@ def signup(request):
         login(request, user)
         return redirect("dashboard:home")
     return render(request, "accounts/signup.html", {"form": form})
+
+
+def is_demo_account(user):
+    """True for the sample accounts on a public demo, which every visitor shares."""
+    domain = user.email.rsplit("@", 1)[-1].lower()
+    return settings.DEMO_MODE and domain in settings.DEMO_EMAIL_DOMAINS
 
 
 SAVED = {
@@ -87,6 +95,11 @@ def profile(request):
     if is_landlord:
         forms["business"] = BusinessForm(bound("business"), instance=user.organization)
 
+    locked = is_demo_account(user)
+    if request.method == "POST" and locked and section in ("password", "business"):
+        messages.error(request, "This is a shared demo account, so that cannot be changed here.")
+        return redirect("accounts:profile")
+
     form = forms.get(section)
     if request.method == "POST" and form is not None and form.is_valid():
         form.save()
@@ -107,6 +120,7 @@ def profile(request):
     context = {
         "forms": forms,
         "is_landlord": is_landlord,
+        "locked": locked,
         "lease": lease,
         "landlords": User.objects.filter(
             organization=user.organization, role=User.Role.LANDLORD

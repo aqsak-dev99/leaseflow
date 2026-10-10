@@ -235,6 +235,17 @@
     toBottom();
   }
 
+  // Demo buttons on the login page fill in a sample account and log in.
+  document.querySelectorAll("[data-demo-email]").forEach(function (button) {
+    button.addEventListener("click", function () {
+      var form = document.querySelector(".glass form");
+      if (!form) { return; }
+      form.querySelector("[name=username]").value = button.dataset.demoEmail;
+      form.querySelector("[name=password]").value = button.dataset.demoPassword;
+      form.requestSubmit();
+    });
+  });
+
   // "Copy link" buttons: copy the value of the field they point at.
   document.querySelectorAll("[data-copy]").forEach(function (button) {
     button.addEventListener("click", function () {

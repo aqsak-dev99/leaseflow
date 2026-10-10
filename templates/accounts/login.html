@@ -20,6 +20,15 @@
     {% include "accounts/_fields.html" %}
     <button class="btn btn-arrow" type="submit">Log in<span class="btn-arrow-dot">{% icon "arrow" 16 %}</span></button>
   </form>
+  {% if demo_mode %}
+  <div class="demo-box">
+    <span class="muted">Just looking? Use a demo account:</span>
+    <div class="demo-buttons">
+      <button class="btn btn-ghost btn-small" type="button" data-demo-email="landlord@alpha.test" data-demo-password="demo12345">Demo landlord</button>
+      <button class="btn btn-ghost btn-small" type="button" data-demo-email="ali@alpha.test" data-demo-password="demo12345">Demo tenant</button>
+    </div>
+  </div>
+  {% endif %}
   {% if portal == "tenant" %}
   <p class="glass-foot muted">No account yet? Your landlord creates it for you.</p>
   {% else %}

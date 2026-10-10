@@ -22,7 +22,7 @@
     <h2>Summary</h2>
     <p class="muted">
       {{ run.created_at|date:"j M Y, H:i:s" }}{% if run.conversation %} · {{ run.conversation.user.email }}{% endif %}
-      · {{ run.input_tokens }} tokens in, {{ run.output_tokens }} out · estimated cost ${{ run.cost|floatformat:6 }} · {{ run.latency_ms }} ms
+      {% if show_costs %}· {{ run.input_tokens }} tokens in, {{ run.output_tokens }} out · estimated cost ${{ run.cost|floatformat:6 }} {% endif %}· {{ run.latency_ms }} ms
     </p>
     {% if question %}<p><strong>Tenant asked:</strong> {{ question.content }}</p>{% endif %}
     {% if reply %}<p><strong>Assistant replied:</strong> {{ reply.content|linebreaksbr }}</p>{% endif %}

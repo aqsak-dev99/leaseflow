@@ -52,7 +52,7 @@ def test_a_chat_run_is_saved_with_its_cost(client, monkeypatch, settings):
 
 
 @pytest.mark.django_db
-def test_activity_page_totals_cost_for_the_landlords_organization_only(client, settings):
+def test_activity_page_totals_cost_for_staff_in_their_own_organization_only(client, settings):
     settings.LLM_INPUT_PRICE = 0.15
     settings.LLM_OUTPUT_PRICE = 0.60
     alpha = User.objects.get(email="landlord@alpha.test").organization
@@ -61,6 +61,7 @@ def test_activity_page_totals_cost_for_the_landlords_organization_only(client, s
     AgentRun.objects.create(organization=alpha, route="lease", cost=Decimal("0.0200"))
     AgentRun.objects.create(organization=alpha, route="payment", cost=Decimal("0.0500"))
     AgentRun.objects.create(organization=beta, route="lease", cost=Decimal("9.0000"))
+    User.objects.filter(email="landlord@alpha.test").update(is_staff=True)
     client.login(email="landlord@alpha.test", password=PASSWORD)
 
     response = client.get("/activity/")
@@ -77,7 +78,7 @@ def test_activity_page_totals_cost_for_the_landlords_organization_only(client, s
 
 
 @pytest.mark.django_db
-def test_run_page_shows_the_run_cost_and_each_steps_cost(client, settings):
+def test_run_page_shows_staff_the_run_cost_and_each_steps_cost(client, settings):
     settings.LLM_INPUT_PRICE = 0.15
     settings.LLM_OUTPUT_PRICE = 0.60
     alpha = User.objects.get(email="landlord@alpha.test").organization
@@ -88,6 +89,7 @@ def test_run_page_shows_the_run_cost_and_each_steps_cost(client, settings):
     run = AgentRun.objects.create(
         organization=alpha, route="lease", steps=steps, cost=Decimal("0.000352")
     )
+    User.objects.filter(email="landlord@alpha.test").update(is_staff=True)
     client.login(email="landlord@alpha.test", password=PASSWORD)
 
     html = client.get(f"/runs/{run.id}/").content.decode()
