@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth.password_validation import validate_password
 
+from .models import Property, Unit
+
 
 class DateInput(forms.DateInput):
     input_type = "date"
@@ -49,3 +51,37 @@ class ExistingAccountForm(forms.Form):
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={"autocomplete": "current-password"})
     )
+
+
+class PropertyForm(forms.ModelForm):
+    class Meta:
+        model = Property
+        fields = ["name", "address", "city"]
+        labels = {"name": "Property name"}
+
+
+class UnitForm(forms.ModelForm):
+    """A unit in one property. The property comes from the address, not from the form."""
+
+    class Meta:
+        model = Unit
+        fields = ["unit_number", "bedrooms", "monthly_rent"]
+        labels = {"monthly_rent": "Monthly rent (Rs.)"}
+
+    def __init__(self, *args, property, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.property = property
+        self.fields["monthly_rent"].min_value = 1
+        self.fields["monthly_rent"].widget.attrs["min"] = 1
+
+    def clean_unit_number(self):
+        unit_number = self.cleaned_data["unit_number"].strip()
+        if self.property.units.filter(unit_number__iexact=unit_number).exists():
+            raise forms.ValidationError("This property already has a unit with that number.")
+        return unit_number
+
+    def clean_monthly_rent(self):
+        rent = self.cleaned_data["monthly_rent"]
+        if rent <= 0:
+            raise forms.ValidationError("The rent must be more than zero.")
+        return rent

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block title %}Add a unit · LeaseFlow{% endblock %}
+{% block content %}
+<div>
+  <a class="back" href="{% url 'dashboard:properties' %}">{% icon "back" 16 %}Properties</a>
+  <div class="page-head"><h1>Add a unit</h1></div>
+</div>
+<div class="grid grid-2">
+  <div class="card section">
+    <div class="card-head"><h2>{{ property.name }}</h2><span class="muted">{{ property.address }}, {{ property.city }}</span></div>
+    <form method="post" class="form" novalidate>
+      {% csrf_token %}
+      {{ form.as_div }}
+      <button class="btn btn-arrow" type="submit">Save unit<span class="btn-arrow-dot">{% icon "arrow" 16 %}</span></button>
+    </form>
+  </div>
+  <div class="card card-ink section">
+    <div class="card-head"><h2>Good to know</h2></div>
+    <ol class="steps-list">
+      <li>The unit starts as vacant.</li>
+      <li>Use "Invite tenant" on the Properties page to offer it to someone.</li>
+      <li>The rent here is the default for new leases; you can change it per invitation.</li>
+    </ol>
+  </div>
+</div>
+{% endblock %}

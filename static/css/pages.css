@@ -218,4 +218,22 @@ input:disabled { opacity: 0.65; cursor: not-allowed; }
 .card-ink .facts dt { color: var(--on-ink-muted); }
 .card-ink .facts > div { border-color: var(--ink-line); }
 .card-ink .facts dd { color: var(--on-ink); }
+
 .topbar { position: relative; top: auto; }
+
+/* An accordion card: closed until its heading is clicked (the password card on the profile). */
+.accordion { padding: 0; overflow: hidden; }
+.accordion > summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 24px; border-radius: inherit; transition: background var(--fast) var(--ease); }
+.accordion > summary::-webkit-details-marker { display: none; }
+.accordion > summary:hover { background: var(--surface-2); }
+.accordion > summary > span:first-child { display: flex; flex-direction: column; gap: 2px; }
+.accordion > summary strong { font-size: 1.15rem; letter-spacing: -0.01em; }
+.accordion > summary .muted { font-size: 0.87rem; }
+.accordion-mark { width: 38px; height: 38px; flex-shrink: 0; border-radius: 50%; border: 1px solid var(--border); display: grid; place-items: center; transition: transform 260ms var(--ease), background var(--fast) var(--ease), border-color var(--fast) var(--ease); }
+.accordion > summary:hover .accordion-mark { border-color: var(--gold); }
+.accordion[open] .accordion-mark { transform: rotate(45deg); background: var(--ink); color: var(--gold); border-color: var(--ink); }
+.accordion > .form { padding: 4px 24px 24px; }
+details.accordion::details-content { block-size: 0; overflow: clip; transition: block-size 300ms var(--ease), content-visibility 300ms allow-discrete; }
+details.accordion[open]::details-content { block-size: auto; }
+.empty p { margin: 0 0 14px; }
+

@@ -8,8 +8,8 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.http import require_POST
 
 from . import invitations
-from .forms import ExistingAccountForm, InviteForm, NewAccountForm
-from .models import Lease, Unit
+from .forms import ExistingAccountForm, InviteForm, NewAccountForm, PropertyForm, UnitForm
+from .models import Lease, Property, Unit
 
 LINK_SESSION_KEY = "invitation_link"
 
@@ -25,6 +25,39 @@ def _remember_link(request, invitation, raw_token):
         "email": invitation.email,
         "url": invitations.accept_url(raw_token),
     }
+
+
+@login_required
+def property_add(request):
+    """Landlord: add a building or house to their own organization."""
+    _require_landlord(request)
+    form = PropertyForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        new = form.save(commit=False)
+        new.organization = request.organization
+        new.save()
+        messages.success(request, f"{new.name} was added. Now add its first unit.")
+        return redirect("properties:unit_add", property_id=new.id)
+    return render(request, "properties/property_form.html", {"form": form})
+
+
+@login_required
+def unit_add(request, property_id):
+    """Landlord: add a unit to one of their own properties. It starts vacant."""
+    _require_landlord(request)
+    home = get_object_or_404(Property.objects.for_org(request.organization), pk=property_id)
+    form = UnitForm(request.POST or None, property=home)
+    if request.method == "POST" and form.is_valid():
+        unit = form.save(commit=False)
+        unit.organization = request.organization
+        unit.property = home
+        unit.status = Unit.Status.VACANT
+        unit.save()
+        messages.success(
+            request, f"Unit {unit.unit_number} was added. You can invite a tenant now."
+        )
+        return redirect("dashboard:properties")
+    return render(request, "properties/unit_form.html", {"form": form, "property": home})
 
 
 @login_required

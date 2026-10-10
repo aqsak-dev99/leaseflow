@@ -57,15 +57,18 @@
       {% endif %}
     </div>
     {% endif %}
-    <div class="card section">
-      <div class="card-head"><h2>Password</h2></div>
+    <details class="card section accordion"{% if forms.password.errors %} open{% endif %}>
+      <summary>
+        <span><strong>Password</strong><span class="muted">Change the password you log in with</span></span>
+        <span class="accordion-mark">{% icon "plus" 18 %}</span>
+      </summary>
       <form method="post" class="form" novalidate>
         {% csrf_token %}
         <input type="hidden" name="section" value="password">
         {{ forms.password.as_div }}
         <button class="btn" type="submit">Change password</button>
       </form>
-    </div>
+    </details>
   </div>
 </div>
 {% endblock %}

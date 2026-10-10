@@ -2,7 +2,7 @@
 {% load ui %}
 {% block title %}Properties · LeaseFlow{% endblock %}
 {% block content %}
-<div class="page-head"><h1>Properties</h1></div>
+<div class="page-head"><h1>Properties</h1><a class="btn" href="{% url 'properties:property_add' %}">{% icon "plus" 16 %}Add property</a></div>
 {% if new_link %}
   <div class="card invite-link" role="status">
     <div>
@@ -23,7 +23,10 @@
         <h2>{{ row.property.name }}</h2>
         <span class="muted">{{ row.property.address }}, {{ row.property.city }}</span>
       </div>
-      <span class="badge">{{ row.units|length }} unit{{ row.units|length|pluralize }}</span>
+      <div class="actions">
+        <span class="badge">{{ row.units|length }} unit{{ row.units|length|pluralize }}</span>
+        <a class="btn btn-ghost btn-small" href="{% url 'properties:unit_add' row.property.id %}">{% icon "plus" 16 %}Add unit</a>
+      </div>
     </div>
     <div class="table-wrap">
     <table class="table stackable">
@@ -55,12 +58,14 @@
             </td>
             {% endif %}
           </tr>
+        {% empty %}
+          <tr><td colspan="6" class="muted">No units yet. Use "Add unit" to create the first one.</td></tr>
         {% endfor %}
       </tbody>
     </table>
     </div>
   </div>
 {% empty %}
-  <div class="card empty">{% icon "building" 28 %}No properties yet.</div>
+  <div class="card empty">{% icon "building" 28 %}<p>No properties yet. Add your first one to start inviting tenants.</p><a class="btn" href="{% url 'properties:property_add' %}">{% icon "plus" 16 %}Add property</a></div>
 {% endfor %}
 {% endblock %}
