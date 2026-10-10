@@ -4,10 +4,9 @@
 
 **Live demo:** https://leaseflow-iyku.onrender.com
 
-| Role | Email | Password |
-| --- | --- | --- |
-| Landlord | `landlord@alpha.test` | `demo12345` |
-| Tenant | `ali@alpha.test` | `demo12345` |
+Click **Demo landlord** or **Demo tenant** on the login page to look around; no sign-up needed. The demo runs on a free plan that sleeps when idle, so the first page can take up to a minute to load.
+
+To see that one business cannot see another's data, log in as the second landlord, `landlord@beta.test`, with the password `demo12345`.
 
 The login page has one-click **Demo landlord** and **Demo tenant** buttons. The demo runs on a free plan that sleeps when idle, so the first page can take up to a minute to load.
 
@@ -51,6 +50,10 @@ The login page has one-click **Demo landlord** and **Demo tenant** buttons. The 
 | Approvals inbox | Properties and invitations |
 | --- | --- |
 | ![Approvals](docs/screenshots/approvals.png) | ![Properties](docs/screenshots/properties.png) |
+
+| Login | Tenant home on a phone, dark mode |
+| --- | --- |
+| ![Login](docs/screenshots/login.jpg) | <img src="docs/screenshots/tenant-home-dark.png" alt="Tenant home in dark mode" width="280"> |
 
 | Login | Tenant home on a phone, dark mode |
 | --- | --- |
