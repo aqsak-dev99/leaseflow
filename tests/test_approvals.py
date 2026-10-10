@@ -197,6 +197,8 @@ def test_the_draft_uses_the_tenants_own_late_fee_clause(invoice, monkeypatch):
         chunk = SimpleNamespace(
             text="A late fee of Rs. 1,500 applies.",
             page_number=2,
+            id=1,
+            document_id=1,
             document=SimpleNamespace(title="Lease agreement, unit A1"),
         )
         return [chunk]

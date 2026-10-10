@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block title %}Invite a tenant · LeaseFlow{% endblock %}
+{% block content %}
+<div>
+  <a class="back" href="{% url 'dashboard:properties' %}">{% icon "back" 16 %}Properties</a>
+  <div class="page-head"><h1>Invite a tenant</h1></div>
+</div>
+<div class="grid grid-2">
+  <div class="card section">
+    <div class="card-head">
+      <h2>{{ unit.property.name }}, unit {{ unit.unit_number }}</h2>
+      <span class="badge status-vacant">Vacant</span>
+    </div>
+    <form method="post" class="form form-2" novalidate>
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      {% for field in form %}
+        <div{% if field.name == "email" %} class="wide"{% endif %}>
+          {{ field.label_tag }}
+          {{ field }}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
+      <div class="wide"><button class="btn btn-arrow" type="submit">Send invitation<span class="btn-arrow-dot">{% icon "arrow" 16 %}</span></button></div>
+    </form>
+  </div>
+  <div class="card card-ink section">
+    <div class="card-head"><h2>What happens next</h2></div>
+    <ol class="steps-list">
+      <li>We email the tenant a private link. You also get the link to copy.</li>
+      <li>They choose a password. The link works once and expires in 7 days.</li>
+      <li>Their lease starts with these details and the unit becomes occupied.</li>
+      <li>They see only this unit, its rent and their own requests.</li>
+    </ol>
+  </div>
+</div>
+{% endblock %}

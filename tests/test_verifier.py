@@ -8,7 +8,9 @@ from apps.agents.tracing import Trace
 
 
 def fake_chunk(title, page, text):
-    return SimpleNamespace(document=SimpleNamespace(title=title), page_number=page, text=text)
+    return SimpleNamespace(
+        id=page, document_id=1, document=SimpleNamespace(title=title), page_number=page, text=text
+    )
 
 
 class FakeModel:

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block title %}Invitation not valid · LeaseFlow{% endblock %}
+{% block body_class %} is-auth{% endblock %}
+{% block content %}
+{% include "accounts/_scene.html" %}
+<div class="glass">
+  <div>
+    <h1>Link not valid</h1>
+    <p class="muted">This invitation has already been used, was cancelled, or has expired. Ask your landlord to send a new one.</p>
+  </div>
+  <a class="btn btn-arrow" href="{% url 'accounts:login' %}?portal=tenant">Go to login<span class="btn-arrow-dot">{% icon "arrow" 16 %}</span></a>
+</div>
+{% endblock %}

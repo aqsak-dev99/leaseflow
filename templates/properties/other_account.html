@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block title %}Your invitation · LeaseFlow{% endblock %}
+{% block content %}
+<div class="card section narrow">
+  <div class="card-head"><h2>This invitation is for someone else</h2></div>
+  <p>You are signed in as <strong>{{ user.email }}</strong>, but this invitation was sent to a different email address. Log out, then open the link again.</p>
+  <form method="post" action="{% url 'accounts:logout' %}">
+    {% csrf_token %}
+    <button class="btn" type="submit">Log out</button>
+  </form>
+</div>
+{% endblock %}

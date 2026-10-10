@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.password_validation import validate_password
 
-from .models import User
+from .models import Organization, User
 
 
 class SignupForm(forms.Form):
@@ -19,3 +19,20 @@ class SignupForm(forms.Form):
         password = self.cleaned_data["password"]
         validate_password(password)
         return password
+
+
+class ProfileForm(forms.ModelForm):
+    """The details a person may change about themselves. Email and role are not here."""
+
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name", "phone"]
+
+
+class BusinessForm(forms.ModelForm):
+    """A landlord's business name, as tenants see it."""
+
+    class Meta:
+        model = Organization
+        fields = ["name"]
+        labels = {"name": "Business name"}

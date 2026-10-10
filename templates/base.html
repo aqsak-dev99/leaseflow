@@ -1,46 +1,141 @@
-{% load static %}
+{% load static ui %}
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
   <title>{% block title %}LeaseFlow{% endblock %}</title>
-  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <script>
+    // Runs before the page paints: pick the theme, and note whether the splash was already shown.
+    (function () {
+      var root = document.documentElement;
+      var theme = null;
+      try { theme = localStorage.getItem("leaseflow-theme"); } catch (error) {}
+      if (!theme) theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      root.dataset.theme = theme;
+      try {
+        if (sessionStorage.getItem("leaseflow-splash")) root.classList.add("splash-seen");
+        else sessionStorage.setItem("leaseflow-splash", "1");
+      } catch (error) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap">
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components.css' %}">
+  <link rel="stylesheet" href="{% static 'css/pages.css' %}">
+  <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
   <script src="{% static 'js/htmx.min.js' %}" defer></script>
+  <script src="{% static 'js/app.js' %}" defer></script>
 </head>
-<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-  <header class="topbar">
-    <div class="nav">
-      <a class="brand" href="/">LeaseFlow</a>
-      {% if user.is_authenticated and user.role == "landlord" %}
-        <a href="{% url 'dashboard:home' %}">Dashboard</a>
-        <a href="{% url 'dashboard:properties' %}">Properties</a>
-        <a href="{% url 'dashboard:tickets' %}">Tickets</a>
-        <a href="{% url 'dashboard:invoices' %}">Invoices</a>
-        <a href="{% url 'dashboard:approvals' %}">Approvals</a>
-        <a href="{% url 'dashboard:activity' %}">AI activity</a>
-      {% elif user.is_authenticated %}
-        <a href="{% url 'dashboard:home' %}">Home</a>
-        <a href="{% url 'dashboard:invoices' %}">Rent</a>
-        <a href="{% url 'dashboard:chat' %}">Assistant</a>
-      {% endif %}
-    </div>
-    <nav class="nav">
+<body class="{% if user.is_authenticated and user.role == 'tenant' %}has-bottom-nav{% endif %}{% block body_class %}{% endblock %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  {% block splash %}{% endblock %}
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="shell">
+    <header class="topbar">
+      <div class="topbar-row">
+        <a class="brand" href="/"><span class="brand-mark">{% include "_mark.html" %}</span><span class="brand-name">LeaseFlow</span></a>
+        {% if user.is_authenticated and user.role == "landlord" %}
+          <form class="search" action="{% url 'dashboard:search' %}" method="get" role="search">
+            {% icon "search" 18 %}
+            <label class="sr-only" for="search-input">Search tenants, units, tickets and invoices</label>
+            <input id="search-input" type="search" name="q" value="{{ q|default:'' }}" placeholder="Search tenants, units, tickets, invoices" autocomplete="off" maxlength="80"
+                   hx-get="{% url 'dashboard:search_suggest' %}"
+                   hx-trigger="input changed delay:250ms, focus[this.value.length > 1]"
+                   hx-target="#search-panel"
+                   hx-swap="innerHTML">
+            <kbd class="search-key" aria-hidden="true">/</kbd>
+            <div class="search-panel" id="search-panel" aria-live="polite"></div>
+          </form>
+        {% endif %}
+        <div class="topbar-actions">
+          <button class="icon-btn theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode">{% icon "moon" 19 %}{% icon "sun" 19 %}</button>
+          {% if user.is_authenticated %}
+            <details class="menu bell"
+                     hx-get="{% url 'dashboard:notifications_panel' %}"
+                     hx-trigger="toggle[this.open]"
+                     hx-target="find .bell-list"
+                     hx-swap="innerHTML">
+              <summary class="icon-btn" aria-label="Notifications">
+                {% icon "bell" 19 %}
+                <span id="bell-count" hx-get="{% url 'dashboard:notifications_count' %}" hx-trigger="every 60s" hx-swap="outerHTML">{% include "dashboard/_notification_count.html" with inner=True %}</span>
+              </summary>
+              <div class="menu-panel bell-panel">
+                <div class="card-head">
+                  <h2>Notifications</h2>
+                  <a href="{% url 'dashboard:notifications' %}">See all</a>
+                </div>
+                <div class="bell-list">
+                  <div class="skeleton skeleton-line"></div>
+                  <div class="skeleton skeleton-line"></div>
+                  <div class="skeleton skeleton-line"></div>
+                </div>
+              </div>
+            </details>
+            <details class="menu">
+              <summary aria-label="Account menu">
+                <span class="menu-who"><strong>{{ request.organization.name|default:user.email }}</strong>{{ user.get_role_display }}</span>
+                <span class="avatar">{{ user|initials }}</span>
+              </summary>
+              <div class="menu-panel">
+                <div>
+                  <strong>{{ user.get_full_name|default:user.get_role_display }}</strong>
+                  <div class="muted">{{ user.email }}{% if request.organization %} · {{ request.organization.name }}{% endif %}</div>
+                </div>
+                <div class="menu-actions">
+                  <a class="btn btn-small" href="{% url 'accounts:profile' %}">Profile</a>
+                  <form method="post" action="{% url 'accounts:logout' %}">
+                    {% csrf_token %}
+                    <button class="btn btn-ghost btn-small" type="submit">Log out</button>
+                  </form>
+                </div>
+              </div>
+            </details>
+          {% endif %}
+        </div>
+      </div>
       {% if user.is_authenticated %}
-        <span class="muted">{{ user.email }}{% if request.organization %} · {{ request.organization.name }}{% endif %}</span>
-        <form method="post" action="{% url 'accounts:logout' %}">
-          {% csrf_token %}
-          <button class="link" type="submit">Log out</button>
-        </form>
-      {% else %}
-        <a href="{% url 'accounts:login' %}">Log in</a>
-        <a href="{% url 'accounts:signup' %}">Sign up</a>
+        <nav class="tabs" aria-label="Main">
+          {% if user.role == "landlord" %}
+            <a href="{% url 'dashboard:home' %}"{% current "home" %}>Dashboard</a>
+            <a href="{% url 'dashboard:properties' %}"{% current "properties" %}>Properties</a>
+            <a href="{% url 'dashboard:tickets' %}"{% current "tickets,ticket_detail" %}>Tickets</a>
+            <a href="{% url 'dashboard:invoices' %}"{% current "invoices" %}>Invoices</a>
+            <a href="{% url 'dashboard:approvals' %}"{% current "approvals" %}>Approvals{% if nav_pending_approvals %} <span class="count" aria-label="{{ nav_pending_approvals }} waiting">{{ nav_pending_approvals }}</span>{% endif %}</a>
+            <a href="{% url 'dashboard:activity' %}"{% current "activity,run_detail" %}>AI activity</a>
+          {% else %}
+            <a href="{% url 'dashboard:home' %}"{% current "home,ticket_detail" %}>Home</a>
+            <a href="{% url 'dashboard:chat' %}"{% current "chat" %}>Assistant</a>
+            <a href="{% url 'dashboard:invoices' %}"{% current "invoices" %}>Rent</a>
+          {% endif %}
+        </nav>
       {% endif %}
+    </header>
+    <main class="container" id="main">
+      {% if messages %}
+        <div class="toasts">
+          {% for message in messages %}
+            <p class="notice notice-{{ message.tags }}" role="status">
+              {% if message.tags == "error" %}{% icon "alert" %}{% else %}{% icon "check-circle" %}{% endif %}
+              <span>{{ message }}</span>
+              <button class="icon-btn" type="button" data-dismiss aria-label="Dismiss">{% icon "close" 16 %}</button>
+            </p>
+          {% endfor %}
+        </div>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  {% if user.is_authenticated and user.role == "tenant" %}
+    <nav class="bottom-nav" aria-label="Main">
+      <a href="{% url 'dashboard:home' %}"{% current "home,ticket_detail" %}>{% icon "home" 21 %}<span>Home</span></a>
+      <a href="{% url 'dashboard:chat' %}"{% current "chat" %} aria-label="Assistant">{% icon "chat" 21 %}<span>Assistant</span></a>
+      <a href="{% url 'dashboard:invoices' %}"{% current "invoices" %} aria-label="Rent">{% icon "card" 21 %}<span>Rent</span></a>
     </nav>
-  </header>
-  <main class="container">
-    {% for message in messages %}<p class="notice notice-{{ message.tags }}">{{ message }}</p>{% endfor %}
-    {% block content %}{% endblock %}
-  </main>
+  {% endif %}
 </body>
 </html>

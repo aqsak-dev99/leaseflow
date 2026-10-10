@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block title %}Profile · LeaseFlow{% endblock %}
+{% block content %}
+<div class="page-head profile-head">
+  <span class="avatar avatar-large">{{ user|initials }}</span>
+  <div>
+    <h1>{{ user.get_full_name|default:user.email }}</h1>
+    <p class="muted">{{ user.get_role_display }} · {{ user.email }}{% if request.organization %} · {{ request.organization.name }}{% endif %}</p>
+  </div>
+</div>
+<div class="grid grid-even">
+  <div class="stack">
+    <div class="card section">
+      <div class="card-head"><h2>Your details</h2></div>
+      <form method="post" class="form" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="section" value="details">
+        <div>
+          <label for="profile-email">Email</label>
+          <input id="profile-email" type="email" value="{{ user.email }}" disabled>
+          <span class="hint">Your email is your login and cannot be changed here.</span>
+        </div>
+        {{ forms.details.as_div }}
+        <button class="btn" type="submit">Save details</button>
+      </form>
+    </div>
+    {% if is_landlord %}
+    <div class="card section">
+      <div class="card-head"><h2>Your business</h2><span class="muted">Shown to your tenants</span></div>
+      <form method="post" class="form" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="section" value="business">
+        {{ forms.business.as_div }}
+        <button class="btn" type="submit">Save business</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+  <div class="stack">
+    {% if not is_landlord %}
+    <div class="card card-ink section">
+      <div class="card-head"><h2>Your tenancy</h2></div>
+      {% if lease %}
+        <dl class="facts">
+          <div><dt>Home</dt><dd>{{ lease.unit.property.name }}, unit {{ lease.unit.unit_number }}</dd></div>
+          <div><dt>Address</dt><dd>{{ lease.unit.property.address }}, {{ lease.unit.property.city }}</dd></div>
+          <div><dt>Monthly rent</dt><dd>Rs. {{ lease.rent_amount|floatformat:"0g" }}, due on day {{ lease.due_day }}</dd></div>
+          <div><dt>Lease runs</dt><dd>{{ lease.start_date|date:"j M Y" }} to {{ lease.end_date|date:"j M Y" }}</dd></div>
+          {% for landlord in landlords %}
+            <div><dt>Landlord</dt><dd>{{ landlord.get_full_name|default:request.organization.name }}<br>{{ landlord.email }}{% if landlord.phone %} · {{ landlord.phone }}{% endif %}</dd></div>
+          {% endfor %}
+        </dl>
+        <p class="hero-note">Only your landlord can change these. Ask them if something is wrong.</p>
+      {% else %}
+        <p class="hero-note">You don't have an active lease on file.</p>
+      {% endif %}
+    </div>
+    {% endif %}
+    <div class="card section">
+      <div class="card-head"><h2>Password</h2></div>
+      <form method="post" class="form" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="section" value="password">
+        {{ forms.password.as_div }}
+        <button class="btn" type="submit">Change password</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

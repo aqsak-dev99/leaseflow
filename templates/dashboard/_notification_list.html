@@ -1,0 +1,14 @@
+{% load ui %}
+{% for item in notifications %}
+  <a class="note{% if item.is_unread %} is-unread{% endif %}" href="{% url 'dashboard:notification_open' item.id %}">
+    <span class="tile-icon">{% notification_icon item %}</span>
+    <span class="note-text">
+      <span class="note-title">{{ item.title }}</span>
+      {% if item.body %}<span class="note-body">{{ item.body }}</span>{% endif %}
+      <span class="note-when">{{ item.created_at|ago }}</span>
+    </span>
+    {% if item.is_unread %}<span class="note-dot" aria-label="Unread"></span>{% endif %}
+  </a>
+{% empty %}
+  <div class="empty">{% icon "bell" 28 %}{% if compact %}Nothing new.{% else %}You have no notifications yet. You will be told here about rent, repairs and decisions.{% endif %}</div>
+{% endfor %}

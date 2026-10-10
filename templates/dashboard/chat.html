@@ -1,33 +1,36 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}Assistant · LeaseFlow{% endblock %}
 {% block content %}
 <div class="card chat">
   <div class="chat-header">
-    <h1>Assistant</h1>
+    <div>
+      <h1>Assistant</h1>
+      <p>Ask about your lease or building rules, report a problem in your unit, or check your rent.</p>
+    </div>
     <form method="post" action="{% url 'dashboard:chat_new' %}">
       {% csrf_token %}
-      <button class="link" type="submit">New conversation</button>
+      <button class="btn btn-small" type="submit">{% icon "plus" 16 %}New conversation</button>
     </form>
   </div>
-  <p class="muted">Ask about your lease or building rules, or report a problem in your unit.</p>
-  <div id="messages" class="messages">
-    {% for message in chat_messages %}{% include "dashboard/_message.html" %}{% endfor %}
+  <div id="messages" class="messages" aria-live="polite">{% for message in chat_messages %}{% include "dashboard/_message.html" %}{% endfor %}</div>
+  <div class="chat-empty">
+    <p class="muted">Lease answers come only from your own lease and always show the page they came from. Try one of these:</p>
+    <div class="suggestions">
+      <button type="button" data-suggest="What is my notice period?">What is my notice period?</button>
+      <button type="button" data-suggest="How much do I owe right now?">How much do I owe right now?</button>
+      <button type="button" data-suggest="The tap in my kitchen sink is leaking.">Report a leaking tap</button>
+    </div>
   </div>
-  <form class="chat-form"
+  <form class="chat-form" id="chat-form"
         hx-post="{% url 'dashboard:chat_send' %}"
         hx-target="#messages"
         hx-swap="beforeend"
-        hx-indicator="#thinking"
+        hx-disabled-elt="find button"
         hx-on::after-request="this.reset()">
-    <input type="text" name="question" maxlength="500" placeholder="e.g. My kitchen sink is leaking" required autocomplete="off">
-    <button class="btn" type="submit">Ask</button>
+    <label class="sr-only" for="question">Your message</label>
+    <input id="question" type="text" name="question" maxlength="500" placeholder="e.g. My kitchen sink is leaking" required autocomplete="off">
+    <button class="btn" type="submit" aria-label="Send">{% icon "send" %}</button>
   </form>
-  <p id="thinking" class="htmx-indicator muted">Working on it…</p>
 </div>
-<script>
-  document.getElementById("messages").addEventListener("click", function (event) {
-    var link = event.target.closest("a");
-    if (link) { link.target = "_blank"; link.rel = "noopener"; }
-  });
-</script>
 {% endblock %}

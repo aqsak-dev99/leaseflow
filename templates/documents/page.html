@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block title %}{{ document.title }}, page {{ page_number }} · LeaseFlow{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <a class="back-link" href="{% url back %}" data-back>{% icon "back" 16 %}Back</a>
+    <h1>{{ document.title }}</h1>
+    <p class="muted">Page {{ page_number }} of {{ page_count }}{% if cited %} · the highlighted passage is what the assistant cited{% endif %}</p>
+  </div>
+  <div class="page-actions">
+    {% if previous_page %}<a class="btn btn-ghost btn-small" href="{% url 'documents:page' document.id previous_page %}">Previous page</a>{% endif %}
+    {% if next_page %}<a class="btn btn-ghost btn-small" href="{% url 'documents:page' document.id next_page %}">Next page</a>{% endif %}
+    {% if has_file %}<a class="btn btn-small" href="{% url 'documents:file' document.id %}#page={{ page_number }}" target="_blank" rel="noopener">Open the PDF</a>{% endif %}
+  </div>
+</div>
+<div class="lease-view{% if has_file %} has-pdf{% endif %}">
+  {% if focus %}<p class="lease-key"><span><i class="key-focus"></i>Closest match to the answer</span><span><i class="key-cited"></i>Rest of the cited passage</span></p>{% endif %}
+  <article class="card lease-page" aria-label="Text of page {{ page_number }}">
+    <div class="lease-page-label">Page {{ page_number }}</div>
+    <div class="lease-text">{{ before }}{% if cited %}{% if focus %}{% if lead %}<mark>{{ lead }}</mark>{% endif %}<mark id="cited" class="focus">{{ focus }}</mark>{% if tail %}<mark>{{ tail }}</mark>{% endif %}{% else %}<mark id="cited">{{ lead }}{{ tail }}</mark>{% endif %}{% endif %}{{ after }}</div>
+  </article>
+  {% if has_file %}
+    <iframe class="lease-pdf card" src="{% url 'documents:file' document.id %}#page={{ page_number }}" title="{{ document.title }}, original PDF" loading="lazy"></iframe>
+  {% endif %}
+</div>
+{% endblock %}

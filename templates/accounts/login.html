@@ -1,12 +1,29 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}Log in · LeaseFlow{% endblock %}
+{% block body_class %} is-auth{% endblock %}
+{% block splash %}{% include "_splash.html" %}{% endblock %}
 {% block content %}
-<div class="card narrow">
-  <h1>Log in</h1>
-  <form method="post">
+{% include "accounts/_scene.html" %}
+<div class="glass">
+  <nav class="portal-switch" aria-label="Choose your portal">
+    <a href="{% url 'accounts:login' %}?portal=landlord"{% if portal != "tenant" %} aria-current="true"{% endif %}>{% icon "building" 17 %}Landlord</a>
+    <a href="{% url 'accounts:login' %}?portal=tenant"{% if portal == "tenant" %} aria-current="true"{% endif %}>{% icon "key" 17 %}Tenant</a>
+  </nav>
+  <div>
+    <h1>{{ portal_info.title }}</h1>
+    <p class="muted">{{ portal_info.note }}</p>
+  </div>
+  <form method="post" class="form" novalidate>
     {% csrf_token %}
-    {{ form.as_p }}
-    <button class="btn" type="submit">Log in</button>
+    <input type="hidden" name="portal" value="{{ portal }}">
+    {% include "accounts/_fields.html" %}
+    <button class="btn btn-arrow" type="submit">Log in<span class="btn-arrow-dot">{% icon "arrow" 16 %}</span></button>
   </form>
+  {% if portal == "tenant" %}
+  <p class="glass-foot muted">No account yet? Your landlord creates it for you.</p>
+  {% else %}
+  <p class="glass-foot muted">New landlord? <a href="{% url 'accounts:signup' %}">Create an account</a></p>
+  {% endif %}
 </div>
 {% endblock %}

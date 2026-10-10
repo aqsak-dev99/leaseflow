@@ -1,0 +1,91 @@
+/* Reduced motion, then tablet and phone layouts. Loaded last so these rules win. */
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+  html { scroll-behavior: auto; }
+  .splash { display: none; }
+  .reveal-ready { opacity: 1; transform: none; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
+/* ---------- Tablet ---------- */
+
+@media (max-width: 960px) {
+  .grid-hero, .grid-2, .grid-even { grid-template-columns: minmax(0, 1fr); }
+  .menu-who { display: none; }
+  .search { max-width: none; }
+  .menu > summary { padding: 0; border: 0; }
+}
+/* ---------- Phone ---------- */
+
+@media (max-width: 640px) {
+  .shell { padding: 12px 14px 48px; }
+  .topbar { top: 8px; padding: 10px 10px 8px 14px; border-radius: 22px; }
+  .card { padding: 18px; border-radius: 22px; }
+  .hero { padding: 24px 20px; }
+  .container { padding-top: 20px; gap: 18px; }
+  .tiles { gap: 12px; }
+  .stat { min-height: 116px; padding: 16px; }
+  .stat-number { font-size: 2rem; }
+  .quick a { padding: 14px 10px; font-size: 0.82rem; }
+  .messages { padding: 18px 16px; }
+  .chat { padding: 0; }
+  .chat-header { padding: 18px; }
+  .inline-form { flex-wrap: wrap; justify-content: flex-start; }
+  .inline-form input { width: 100%; }
+  .btn { min-height: 48px; }
+  .topbar-row { flex-wrap: wrap; }
+  .search { order: 3; flex: 1 1 100%; max-width: none; }
+  .search:focus-within { max-width: none; }
+  .search-key { display: none; }
+  .bell-panel { position: fixed; left: 14px; right: 14px; top: 76px; width: auto; }
+  .glass { padding: 32px 22px 26px; border-radius: 30px; }
+  .auth-scene .glow-maroon { width: 560px; left: -220px; top: -200px; }
+  .auth-scene .glow-gold { width: 460px; right: -180px; bottom: -160px; }
+  .auth-scene .glow-rose, .auth-scene .glow-sun { display: none; }
+  .hide-phone { display: none; }
+
+  /* Tables become a list of cards */
+  .table.stackable thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .table.stackable, .table.stackable tbody, .table.stackable tr, .table.stackable td { display: block; width: 100%; }
+  .table.stackable tr { border: 1px solid var(--border); border-radius: 18px; padding: 6px 14px; margin-bottom: 10px; background: var(--surface-2); }
+  .table.stackable td { border: 0; border-top: 1px solid var(--divider); padding: 10px 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; text-align: right; }
+  .table.stackable td:first-child { border-top: 0; }
+  .table.stackable td[data-label]::before { content: attr(data-label); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); text-align: left; flex-shrink: 0; }
+  .table.stackable td:empty, .table.stackable td.hide-phone { display: none; }
+  .table.stackable td.hide-phone + td { border-top: 0; }
+  .table.stackable td.cell-empty { justify-content: center; text-align: center; }
+  tr.row-link:hover td:first-child { box-shadow: none; }
+
+  /* Tenants get a floating bottom bar in place of the tabs */
+  .has-bottom-nav .tabs { display: none; }
+  .has-bottom-nav .shell { padding-bottom: 110px; }
+  .bottom-nav {
+    position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 25; height: 66px; padding: 0 9px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--ink); border: 1px solid var(--ink-border); border-radius: 33px; box-shadow: var(--shadow-md);
+  }
+  .bottom-nav a {
+    height: 48px; min-width: 56px; padding: 0 16px; border-radius: 24px; color: var(--on-ink-muted);
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.87rem; font-weight: 700;
+    transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+  }
+  .bottom-nav a:hover { text-decoration: none; color: var(--on-ink); }
+  .bottom-nav a span { display: none; }
+  .bottom-nav a[aria-current="page"] { background: var(--gold); color: var(--gold-ink); }
+  .bottom-nav a[aria-current="page"] span { display: inline; }
+}
+
+@media (max-width: 900px) {
+  .lease-view.has-pdf { grid-template-columns: minmax(0, 1fr); }
+  .lease-pdf { display: none; }
+  .lease-page { padding: 40px 22px 26px; }
+}
+
+@media (max-width: 640px) {
+  .form-2 { grid-template-columns: minmax(0, 1fr); }
+  .copy-row { flex-direction: column; }
+  .row-actions { text-align: left; white-space: normal; }
+  .stackable td.is-empty { display: none; }
+}
+

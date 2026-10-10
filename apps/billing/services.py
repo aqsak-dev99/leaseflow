@@ -5,8 +5,11 @@ import calendar
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.db.models import Sum
+from django.urls import reverse
 from django.utils import timezone
 
+from apps.notifications import services as notifications
+from apps.notifications.models import Notification
 from apps.properties.models import Lease
 
 from .models import Invoice, Payment
@@ -28,6 +31,16 @@ def due_date_for(lease, period):
     return period.replace(day=min(lease.due_day, month_end(period).day))
 
 
+def _tell_tenant(invoice, title, body):
+    notifications.notify(
+        user=invoice.lease.tenant,
+        kind=Notification.Kind.RENT,
+        title=title,
+        body=body,
+        url=reverse("dashboard:invoices"),
+    )
+
+
 def generate_invoices(*, period=None, organization=None):
     """Create one invoice per active lease for the month. Safe to run again."""
     period = month_start(period or timezone.localdate())
@@ -40,7 +53,7 @@ def generate_invoices(*, period=None, organization=None):
         leases = leases.filter(organization=organization)
     created = 0
     for lease in leases:
-        _, was_created = Invoice.objects.get_or_create(
+        invoice, was_created = Invoice.objects.get_or_create(
             lease=lease,
             period=period,
             defaults={
@@ -50,6 +63,12 @@ def generate_invoices(*, period=None, organization=None):
             },
         )
         created += int(was_created)
+        if was_created:
+            _tell_tenant(
+                invoice,
+                f"Your {period:%B} rent invoice is ready",
+                f"Rs. {invoice.amount:,.0f}, due {invoice.due_date:%d %B %Y}",
+            )
     return created
 
 
@@ -62,6 +81,11 @@ def mark_overdue(*, today=None):
     )
     for invoice in invoices:
         invoice.status = Invoice.Status.OVERDUE
+        _tell_tenant(
+            invoice,
+            f"Your {invoice.period:%B} rent is overdue",
+            f"Rs. {invoice.amount:,.0f} was due on {invoice.due_date:%d %B %Y}",
+        )
     return invoices
 
 
@@ -102,6 +126,18 @@ def settle(payment):
     if invoice.is_unpaid:
         invoice.status = Invoice.Status.PAID
         invoice.save(update_fields=["status"])
+        tenant = invoice.lease.tenant
+        amount = f"Rs. {payment.amount:,.0f}"
+        _tell_tenant(
+            invoice, "Payment received", f"{amount} for {invoice.period:%B %Y}. Thank you."
+        )
+        notifications.notify_landlords(
+            invoice.organization,
+            kind=Notification.Kind.RENT,
+            title=f"{notifications.display_name(tenant)} paid {invoice.period:%B} rent",
+            body=f"{amount}, unit {invoice.lease.unit.unit_number}",
+            url=reverse("dashboard:invoices"),
+        )
 
 
 @transaction.atomic

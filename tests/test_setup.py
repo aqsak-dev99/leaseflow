@@ -16,5 +16,8 @@ def test_user_belongs_to_organization():
     assert user.role == "landlord"
 
 
-def test_home_page_loads(client):
-    assert client.get("/").status_code == 200
+def test_home_page_sends_visitors_to_the_login_page(client):
+    response = client.get("/")
+
+    assert response.status_code == 302
+    assert response.url == "/login/"

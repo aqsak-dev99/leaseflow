@@ -2,7 +2,10 @@
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
+from django.urls import reverse
 
+from apps.notifications import services as notifications
+from apps.notifications.models import Notification
 from apps.properties.models import Lease, Unit
 
 from .models import MaintenanceTicket, TicketUpdate
@@ -84,6 +87,14 @@ def create_ticket(
         note="Ticket created.",
         new_status=ticket.status,
     )
+    if user.role == "tenant":
+        notifications.notify_landlords(
+            user.organization,
+            kind=Notification.Kind.REPAIR,
+            title=f"New repair ticket: {ticket.title}",
+            body=f"Unit {unit.unit_number}, reported by {notifications.display_name(user)}",
+            url=reverse("dashboard:ticket_detail", args=[ticket.id]),
+        )
     return ticket
 
 
@@ -123,4 +134,12 @@ def update_status(*, user, ticket_id, new_status, note="", cost=None):
         old_status=old_status,
         new_status=new_status,
     )
+    if new_status != old_status and ticket.reported_by.role == "tenant":
+        notifications.notify(
+            user=ticket.reported_by,
+            kind=Notification.Kind.REPAIR,
+            title=f"Your repair ticket is now {ticket.get_status_display().lower()}",
+            body=ticket.title,
+            url=reverse("dashboard:ticket_detail", args=[ticket.id]),
+        )
     return ticket

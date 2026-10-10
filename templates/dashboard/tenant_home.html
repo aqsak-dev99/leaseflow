@@ -1,21 +1,66 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}Home · LeaseFlow{% endblock %}
 {% block content %}
-<h1>Welcome{% if user.first_name %}, {{ user.first_name }}{% endif %}</h1>
-<div class="card section">
-  <h2>Your lease</h2>
-  {% if lease %}
-    <p><strong>{{ lease.unit.property.name }}, unit {{ lease.unit.unit_number }}</strong></p>
-    <p class="muted">{{ lease.unit.property.address }}, {{ lease.unit.property.city }}</p>
-    <p>Rent Rs. {{ lease.rent_amount|floatformat:"0g" }} a month, due on day {{ lease.due_day }}. Lease runs {{ lease.start_date|date:"j M Y" }} to {{ lease.end_date|date:"j M Y" }}.</p>
-  {% else %}
-    <p class="muted">You don't have an active lease on file.</p>
-  {% endif %}
-  <p>{% if balance %}You currently owe <strong>Rs. {{ balance|floatformat:"0g" }}</strong>. <a href="{% url 'dashboard:invoices' %}">View and pay</a>{% else %}You have nothing to pay right now.{% endif %}</p>
-  <p><a class="btn" href="{% url 'dashboard:chat' %}">Open the assistant</a></p>
+<div class="page-head">
+  <div>
+    {% if lease %}<div class="eyebrow">Unit {{ lease.unit.unit_number }}, {{ lease.unit.property.name }}</div>{% endif %}
+    <h1>Welcome{% if user.first_name %}, {{ user.first_name }}{% endif %}</h1>
+  </div>
 </div>
-<div class="card section">
-  <h2>Your maintenance tickets</h2>
+<div class="grid grid-hero">
+  <section class="card card-ink hero" aria-label="Rent">
+    {% if next_invoice %}
+      <div class="page-head">
+        <div class="eyebrow">{{ next_invoice.period|date:"F" }} rent</div>
+        <span class="badge {% if next_invoice.status == 'overdue' %}badge-gold{% else %}status-issued{% endif %}">{{ next_invoice.get_status_display }}</span>
+      </div>
+      <div>
+        <div class="hero-number">Rs. {{ next_invoice.amount|floatformat:"0g" }}</div>
+        <div class="hero-note">{% if next_invoice.status == "overdue" %}Was due{% else %}Due{% endif %} {{ next_invoice.due_date|date:"j F Y" }}{% if balance != next_invoice.amount %} · You currently owe Rs. {{ balance|floatformat:"0g" }} in total{% endif %}</div>
+      </div>
+      <div class="hero-foot">
+        <div class="hairline"></div>
+        <div class="hero-actions">
+          <form method="post" action="{% url 'dashboard:invoice_pay' next_invoice.id %}">
+            {% csrf_token %}
+            <button class="btn btn-gold" type="submit">Pay now</button>
+          </form>
+          <a class="btn btn-ghost" href="{% url 'dashboard:chat' %}">Ask for more time</a>
+        </div>
+      </div>
+    {% else %}
+      <div class="eyebrow">Rent</div>
+      <div>
+        <div class="hero-number">All paid</div>
+        <div class="hero-note">You have nothing to pay right now.</div>
+      </div>
+      <div class="hero-actions"><a class="btn btn-ghost" href="{% url 'dashboard:invoices' %}">View past invoices</a></div>
+    {% endif %}
+  </section>
+  <div class="stack">
+    <div class="quick">
+      <a class="card" href="{% url 'dashboard:chat' %}"><span class="tile-icon">{% icon "doc" %}</span>Ask about my lease</a>
+      <a class="card" href="{% url 'dashboard:chat' %}"><span class="tile-icon">{% icon "wrench" %}</span>Report a repair</a>
+      <a class="card" href="{% url 'dashboard:invoices' %}"><span class="tile-icon">{% icon "card" %}</span>My invoices</a>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Your lease</h2><a href="{% url 'dashboard:chat' %}">Open the assistant</a></div>
+      {% if lease %}
+        <dl class="facts">
+          <div><dt>Home</dt><dd>{{ lease.unit.property.name }}, unit {{ lease.unit.unit_number }}</dd></div>
+          <div><dt>Address</dt><dd>{{ lease.unit.property.address }}, {{ lease.unit.property.city }}</dd></div>
+          <div><dt>Monthly rent</dt><dd>Rs. {{ lease.rent_amount|floatformat:"0g" }}, due on day {{ lease.due_day }}</dd></div>
+          <div><dt>Lease runs</dt><dd>{{ lease.start_date|date:"j M Y" }} to {{ lease.end_date|date:"j M Y" }}</dd></div>
+        </dl>
+      {% else %}
+        <p class="muted">You don't have an active lease on file.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<section class="card">
+  <div class="card-head"><h2>Your maintenance tickets</h2><a href="{% url 'dashboard:chat' %}">Report a problem</a></div>
   {% include "dashboard/_ticket_table.html" %}
-</div>
+</section>
 {% endblock %}

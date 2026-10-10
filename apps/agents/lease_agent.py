@@ -81,6 +81,8 @@ def generate(state):
             "title": chunks[number - 1].document.title,
             "page": chunks[number - 1].page_number,
             "text": chunks[number - 1].text,
+            "document_id": chunks[number - 1].document_id,
+            "chunk_id": chunks[number - 1].id,
         }
         for number in cited_numbers(answer)
         if 1 <= number <= len(chunks)

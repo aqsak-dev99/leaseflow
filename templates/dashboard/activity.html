@@ -1,33 +1,40 @@
 {% extends "base.html" %}
 {% block title %}AI activity · LeaseFlow{% endblock %}
 {% block content %}
-<h1>AI activity</h1>
+<div class="page-head">
+  <div>
+    <h1>AI activity</h1>
+    <p class="muted">Every time an assistant runs, the route it took, the tools it used and what it cost are recorded here.</p>
+  </div>
+</div>
 <div class="stats">
-  <div class="card stat"><span class="stat-number">{{ count }}</span><span class="muted">Agent runs</span></div>
-  <div class="card stat"><span class="stat-number">{{ totals.input_tokens|default:0 }}</span><span class="muted">Input tokens</span></div>
-  <div class="card stat"><span class="stat-number">{{ totals.output_tokens|default:0 }}</span><span class="muted">Output tokens</span></div>
-  <div class="card stat"><span class="stat-number">{{ totals.latency|default:0|floatformat:0 }} ms</span><span class="muted">Average time</span></div>
-  <div class="card stat"><span class="stat-number">${{ totals.cost|default:0|floatformat:4 }}</span><span class="muted">Estimated cost</span></div>
+  <div class="card stat"><span class="stat-label">Agent runs</span><span class="stat-number">{{ count }}</span></div>
+  <div class="card stat"><span class="stat-label">Input tokens</span><span class="stat-number">{{ totals.input_tokens|default:0 }}</span></div>
+  <div class="card stat"><span class="stat-label">Output tokens</span><span class="stat-number">{{ totals.output_tokens|default:0 }}</span></div>
+  <div class="card stat"><span class="stat-label">Average time</span><span class="stat-number">{{ totals.latency|default:0|floatformat:0 }} ms</span></div>
+  <div class="card card-ink stat"><span class="stat-label">Estimated cost</span><span class="stat-number">${{ totals.cost|default:0|floatformat:4 }}</span></div>
 </div>
 <div class="card section">
-  <h2>Cost by assistant</h2>
-  <table class="table">
+  <div class="card-head"><h2>Cost by assistant</h2></div>
+  <div class="table-wrap">
+  <table class="table stackable">
     <thead>
-      <tr><th>Assistant</th><th>Runs</th><th>Tokens in / out</th><th>Estimated cost</th></tr>
+      <tr><th>Assistant</th><th>Runs</th><th>Tokens in / out</th><th class="right">Estimated cost</th></tr>
     </thead>
     <tbody>
       {% for row in by_route %}
         <tr>
-          <td><span class="badge">{{ row.route|default:"none" }}</span></td>
-          <td>{{ row.runs }}</td>
-          <td>{{ row.input_tokens }} / {{ row.output_tokens }}</td>
-          <td>${{ row.cost|floatformat:4 }}</td>
+          <td data-label="Assistant"><span class="badge">{{ row.route|default:"none" }}</span></td>
+          <td data-label="Runs">{{ row.runs }}</td>
+          <td data-label="Tokens in / out">{{ row.input_tokens }} / {{ row.output_tokens }}</td>
+          <td data-label="Estimated cost" class="right strong">${{ row.cost|floatformat:4 }}</td>
         </tr>
       {% empty %}
-        <tr><td colspan="4" class="muted">No agent runs yet.</td></tr>
+        <tr><td colspan="4" class="cell-empty">No agent runs yet.</td></tr>
       {% endfor %}
     </tbody>
   </table>
+  </div>
   <p class="muted">
     Estimated at the chat model's listed price of ${{ input_price|floatformat:2 }} per million input tokens
     and ${{ output_price|floatformat:2 }} per million output tokens. Document search (embedding) calls are
@@ -35,6 +42,8 @@
   </p>
 </div>
 <div class="card section">
+  <div class="card-head"><h2>All runs</h2><span class="muted">Select a run to see each step</span></div>
   {% include "dashboard/_run_table.html" %}
+  {% include "dashboard/_pagination.html" %}
 </div>
 {% endblock %}

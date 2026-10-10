@@ -1,12 +1,19 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}Sign up · LeaseFlow{% endblock %}
+{% block body_class %} is-auth{% endblock %}
 {% block content %}
-<div class="card narrow">
-  <h1>Create your landlord account</h1>
-  <form method="post">
+{% include "accounts/_scene.html" %}
+<div class="glass">
+  <div>
+    <h1>Sign up</h1>
+    <p class="muted">Create your landlord account in a minute.</p>
+  </div>
+  <form method="post" class="form" novalidate>
     {% csrf_token %}
-    {{ form.as_p }}
-    <button class="btn" type="submit">Create account</button>
+    {% include "accounts/_fields.html" %}
+    <button class="btn btn-arrow" type="submit">Create account<span class="btn-arrow-dot">{% icon "arrow" 16 %}</span></button>
   </form>
+  <p class="glass-foot muted">Already have an account? <a href="{% url 'accounts:login' %}">Log in</a></p>
 </div>
 {% endblock %}

@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "apps.maintenance",
     "apps.billing",
     "apps.agents",
+    "apps.notifications",
     "apps.dashboard",
 ]
 
@@ -52,6 +53,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "apps.dashboard.context.shell",
             ],
         },
     },

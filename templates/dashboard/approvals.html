@@ -1,62 +1,72 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}Approvals · LeaseFlow{% endblock %}
 {% block content %}
-<h1>Approvals</h1>
-<p class="muted">The assistant can draft reminders and pass on waiver requests. Nothing is sent and no invoice changes until you approve it here.</p>
-<form method="post" action="{% url 'dashboard:overdue_check_now' %}" class="section">
-  {% csrf_token %}
-  <button class="btn" type="submit">Check for overdue rent now</button>
-  <span class="muted">This also runs by itself every morning.</span>
-</form>
-
-<h2>Waiting for you</h2>
-{% for item in pending %}
-  <div class="card section">
-    <p>
-      <span class="badge">{{ item.get_kind_display }}</span>
-      <span class="muted">
-        {{ item.invoice.lease.tenant.get_full_name|default:item.invoice.lease.tenant.email }},
-        unit {{ item.invoice.lease.unit.unit_number }} ·
-        rent for {{ item.invoice.period|date:"F Y" }}, Rs. {{ item.invoice.amount|floatformat:"0g" }},
-        due {{ item.invoice.due_date|date:"j M Y" }}
-        {% if item.run_id %}· <a href="{% url 'dashboard:run_detail' item.run_id %}">how the agent drafted this</a>{% endif %}
-      </span>
-    </p>
-    <form method="post" action="{% url 'dashboard:approval_decide' item.id %}">
-      {% csrf_token %}
-      {% if item.kind == "reminder" %}
-        <p><label>Subject</label><input type="text" name="subject" value="{{ item.subject }}" maxlength="200"></p>
-        <p><label>Message to the tenant (you can edit it)</label><textarea name="body" rows="8">{{ item.body }}</textarea></p>
-        <button class="btn" type="submit" name="action" value="approve">Approve and send</button>
-      {% else %}
-        <p><strong>{{ item.subject }}</strong></p>
-        <p>Tenant's reason: {{ item.body }}</p>
-        <button class="btn" type="submit" name="action" value="approve">Approve and waive this invoice</button>
-      {% endif %}
-      <button class="link" type="submit" name="action" value="reject">Reject</button>
-    </form>
+<div class="page-head">
+  <div>
+    <h1>Approvals</h1>
+    <p class="muted">The assistant can draft reminders and pass on waiver requests. Nothing is sent and no invoice changes until you approve it here.</p>
   </div>
-{% empty %}
-  <div class="card section"><p class="muted">Nothing is waiting for your approval.</p></div>
-{% endfor %}
+  <form method="post" action="{% url 'dashboard:overdue_check_now' %}" class="actions">
+    {% csrf_token %}
+    <span class="muted">Also runs by itself every morning</span>
+    <button class="btn btn-gold" type="submit">Check for overdue rent now</button>
+  </form>
+</div>
 
-<h2>Recently decided</h2>
+<section class="stack">
+  <h2>Waiting for you</h2>
+  {% for item in pending %}
+    <div class="card stack">
+      <div class="stack">
+        <span class="tag">{% if item.kind == "reminder" %}{% icon "doc" 14 %}{% else %}{% icon "card" 14 %}{% endif %}{{ item.get_kind_display }}</span>
+        <p class="decision-meta">
+          {{ item.invoice.lease.tenant.get_full_name|default:item.invoice.lease.tenant.email }},
+          unit {{ item.invoice.lease.unit.unit_number }} ·
+          rent for {{ item.invoice.period|date:"F Y" }}, Rs. {{ item.invoice.amount|floatformat:"0g" }},
+          due {{ item.invoice.due_date|date:"j M Y" }}
+          {% if item.run_id %}· <a href="{% url 'dashboard:run_detail' item.run_id %}">how the agent drafted this</a>{% endif %}
+        </p>
+      </div>
+      <form method="post" action="{% url 'dashboard:approval_decide' item.id %}">
+        {% csrf_token %}
+        {% if item.kind == "reminder" %}
+          <div class="field"><label for="subject-{{ item.id }}">Subject</label><input id="subject-{{ item.id }}" type="text" name="subject" value="{{ item.subject }}" maxlength="200"></div>
+          <div class="field"><label for="body-{{ item.id }}">Message to the tenant (you can edit it)</label><textarea id="body-{{ item.id }}" name="body" rows="8">{{ item.body }}</textarea></div>
+        {% else %}
+          <p><strong>{{ item.subject }}</strong></p>
+          <p>Tenant's reason: {{ item.body }}</p>
+        {% endif %}
+        <div class="actions">
+          <button class="btn" type="submit" name="action" value="approve">{% if item.kind == "reminder" %}Approve and send{% else %}Approve and waive this invoice{% endif %}</button>
+          <button class="btn btn-ghost" type="submit" name="action" value="reject">Reject</button>
+        </div>
+      </form>
+    </div>
+  {% empty %}
+    <div class="card empty">{% icon "check-circle" 28 %}Nothing is waiting for your approval.</div>
+  {% endfor %}
+</section>
+
 <div class="card">
-  <table class="table">
+  <div class="card-head"><h2>Recently decided</h2></div>
+  <div class="table-wrap">
+  <table class="table stackable">
     <thead><tr><th>Type</th><th>Tenant</th><th>Month</th><th>Decision</th><th>When</th></tr></thead>
     <tbody>
       {% for item in decided %}
         <tr>
-          <td>{{ item.get_kind_display }}</td>
-          <td>{{ item.invoice.lease.tenant.get_full_name|default:item.invoice.lease.tenant.email }}</td>
-          <td>{{ item.invoice.period|date:"F Y" }}</td>
-          <td><span class="badge status-{{ item.status }}">{{ item.get_status_display }}</span></td>
-          <td class="muted">{{ item.decided_at|date:"j M Y, H:i" }}</td>
+          <td data-label="Type" class="strong">{{ item.get_kind_display }}</td>
+          <td data-label="Tenant">{{ item.invoice.lease.tenant.get_full_name|default:item.invoice.lease.tenant.email }}</td>
+          <td data-label="Month">{{ item.invoice.period|date:"F Y" }}</td>
+          <td data-label="Decision"><span class="badge status-{{ item.status }}">{{ item.get_status_display }}</span></td>
+          <td data-label="When" class="muted">{{ item.decided_at|date:"j M Y, H:i" }}</td>
         </tr>
       {% empty %}
-        <tr><td colspan="5" class="muted">No decisions yet.</td></tr>
+        <tr><td colspan="5" class="cell-empty">No decisions yet.</td></tr>
       {% endfor %}
     </tbody>
   </table>
+  </div>
 </div>
 {% endblock %}

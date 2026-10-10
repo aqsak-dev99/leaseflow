@@ -1,0 +1,78 @@
+/* LeaseFlow colours, sizes and fonts.
+   A warm grey palette (#dad9d8, #b9b8b6, #898681, #58534e, #282623) with one gold accent,
+   used only for the main action, the current page, counts and the "verified" mark.
+   Every other stylesheet uses these variables, so dark mode is only the second block of values. */
+:root {
+  --bg-1: #f6f5f4;
+  --bg-2: #eceae8;
+  --bg-3: #dad9d8;
+  --surface: #ffffff;
+  --surface-2: #f7f6f5;
+  --border: #d3d1ce;
+  --divider: #e4e2e0;
+  --text: #282623;
+  --muted: #58534e;
+  --brand: #58534e;
+  --brand-hover: #46423e;
+  --brand-deep: #3a3632;
+  --brand-tint: #e8e6e4;
+  --brand-ink: #282623;
+  --on-brand: #ffffff;
+  --on-brand-muted: #dad9d8;
+  --accent: #b9b8b6;
+  --accent-hover: #a8a6a3;
+  --accent-soft: #dad9d8;
+  --accent-ink: #282623;
+  --stone: #898681;
+  --gold: #d8b45a;
+  --gold-hover: #c9a448;
+  --gold-soft: #ecd9a0;
+  --gold-ink: #282623;
+  --gold-glow: rgba(216, 180, 90, 0.55);
+  --ink: #282623;
+  --ink-border: #282623;
+  --ink-line: #46423e;
+  --on-ink: #ffffff;
+  --on-ink-muted: #b9b8b6;
+  --chip: #e4e2e0;
+  --warn-bg: #ece3cf;
+  --warn-dot: #8a6a1c;
+  --good-dot: #2f7d4f;
+  --focus: #9a7420;
+  --shadow-sm: 0 1px 2px rgba(40, 38, 35, 0.06);
+  --shadow-md: 0 10px 28px rgba(40, 38, 35, 0.12);
+  --radius-lg: 28px;
+  --radius: 20px;
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --fast: 140ms;
+  --font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg-1: #191816;
+  --bg-2: #1d1c1a;
+  --bg-3: #282623;
+  --surface: #2b2926;
+  --surface-2: #33302d;
+  --border: #46423e;
+  --divider: #3a3734;
+  --text: #f1f0ef;
+  --muted: #b9b8b6;
+  --brand: #58534e;
+  --brand-hover: #6a655f;
+  --brand-deep: #46423e;
+  --brand-tint: #3a3734;
+  --brand-ink: #dad9d8;
+  --ink: #121110;
+  --ink-border: #58534e;
+  --ink-line: #33302d;
+  --chip: #46423e;
+  --warn-bg: #4a4130;
+  --warn-dot: #e3cf9a;
+  --good-dot: #6fcf97;
+  --focus: #d8b45a;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}

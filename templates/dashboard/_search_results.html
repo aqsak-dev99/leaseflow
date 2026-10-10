@@ -1,0 +1,55 @@
+{% load ui %}
+{% if q|length < 2 %}
+  {% if not compact %}<div class="empty">{% icon "search" 28 %}Type at least two letters to search.</div>{% endif %}
+{% elif not found %}
+  <div class="empty">{% icon "search" 28 %}Nothing matches "{{ q }}".</div>
+{% else %}
+  {% if results.tenants %}
+    <div class="result-group">
+      <h3>Tenants</h3>
+      {% for tenant in results.tenants %}
+        <a class="result" href="{% url 'dashboard:search' %}?q={{ tenant.email|urlencode }}">
+          <span class="avatar">{{ tenant|initials }}</span>
+          <span class="note-text"><span class="note-title">{{ tenant.get_full_name|default:tenant.email }}</span><span class="note-body">{{ tenant.email }}</span></span>
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+  {% if results.units %}
+    <div class="result-group">
+      <h3>Units</h3>
+      {% for unit in results.units %}
+        <a class="result" href="{% url 'dashboard:properties' %}">
+          <span class="tile-icon">{% icon "building" 18 %}</span>
+          <span class="note-text"><span class="note-title">Unit {{ unit.unit_number }}</span><span class="note-body">{{ unit.property.name }} · Rs. {{ unit.monthly_rent|floatformat:"0g" }} a month</span></span>
+          <span class="badge status-{{ unit.status }}">{{ unit.get_status_display }}</span>
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+  {% if results.tickets %}
+    <div class="result-group">
+      <h3>Tickets</h3>
+      {% for ticket in results.tickets %}
+        <a class="result" href="{% url 'dashboard:ticket_detail' ticket.id %}">
+          <span class="tile-icon">{% icon "wrench" 18 %}</span>
+          <span class="note-text"><span class="note-title">#{{ ticket.id }} {{ ticket.title }}</span><span class="note-body">Unit {{ ticket.unit.unit_number }} · {{ ticket.get_category_display }}</span></span>
+          <span class="badge status-{{ ticket.status }}">{{ ticket.get_status_display }}</span>
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+  {% if results.invoices %}
+    <div class="result-group">
+      <h3>Invoices</h3>
+      {% for invoice in results.invoices %}
+        <a class="result" href="{% url 'dashboard:invoices' %}">
+          <span class="tile-icon">{% icon "card" 18 %}</span>
+          <span class="note-text"><span class="note-title">{{ invoice.period|date:"F Y" }} · Rs. {{ invoice.amount|floatformat:"0g" }}</span><span class="note-body">{{ invoice.lease.tenant.get_full_name|default:invoice.lease.tenant.email }}, unit {{ invoice.lease.unit.unit_number }}</span></span>
+          <span class="badge status-{{ invoice.status }}">{{ invoice.get_status_display }}</span>
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+  {% if compact %}<a class="result result-all" href="{% url 'dashboard:search' %}?q={{ q|urlencode }}">See all results for "{{ q }}"</a>{% endif %}
+{% endif %}

@@ -1,14 +1,22 @@
+{% load ui %}
 {% if message.role == "user" %}
   <p class="question">{{ message.content }}</p>
 {% else %}
   <div class="answer">
+    <div class="answer-head">
+      <span>{{ message|assistant_name }}</span>
+      {% if message|verified %}<span class="verified">{% icon "check" 13 %}Checked against your lease</span>{% endif %}
+    </div>
     <p>{{ message.content|urlize|linebreaksbr }}</p>
     {% if message.citations %}
       <div class="citations">
         {% for citation in message.citations %}
-          <details>
+          <details class="cite">
             <summary>[{{ citation.number }}] {{ citation.title }}, page {{ citation.page }}</summary>
             <p class="muted">{{ citation.text }}</p>
+            {% if citation.document_id %}
+              <a class="cite-open" href="{% url 'documents:page' citation.document_id citation.page %}?chunk={{ citation.chunk_id }}&amp;answer={{ message.id }}">{% icon "doc" 15 %}Open page {{ citation.page }} of the lease{% icon "arrow" 14 %}</a>
+            {% endif %}
           </details>
         {% endfor %}
       </div>

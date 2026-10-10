@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Lease, Property, Unit
+from .models import Lease, Property, TenantInvitation, Unit
 
 
 @admin.register(Property)
@@ -19,3 +19,10 @@ class UnitAdmin(admin.ModelAdmin):
 class LeaseAdmin(admin.ModelAdmin):
     list_display = ("unit", "tenant", "start_date", "end_date", "status", "organization")
     list_filter = ("organization", "status")
+
+
+@admin.register(TenantInvitation)
+class TenantInvitationAdmin(admin.ModelAdmin):
+    list_display = ("email", "unit", "status", "expires_at", "organization")
+    list_filter = ("organization", "status")
+    exclude = ("token_hash",)

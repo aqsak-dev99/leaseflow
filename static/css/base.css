@@ -1,0 +1,89 @@
+/* Page background, headings, links, focus rings and the animations used everywhere. */
+/* ---------- Base ---------- */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg-3) linear-gradient(165deg, var(--bg-1) 0%, var(--bg-2) 55%, var(--bg-3) 100%) no-repeat;
+  background-size: 100% max(100%, 100vh);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { margin: 0; letter-spacing: -0.02em; line-height: 1.2; }
+h1 { font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.1rem); font-weight: 800; }
+h2 { font-size: 1.25rem; font-weight: 800; }
+h3 { font-size: 1rem; font-weight: 700; }
+p { margin: 0 0 12px; }
+p:last-child { margin-bottom: 0; }
+
+a { color: var(--brand-ink); font-weight: 600; text-decoration: none; transition: color var(--fast) var(--ease); }
+a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.muted { color: var(--muted); }
+.error { color: var(--brand-ink); }
+.num { font-variant-numeric: tabular-nums; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.icon { flex-shrink: 0; display: block; }
+
+.skip-link {
+  position: absolute; left: 16px; top: -60px; z-index: 50;
+  padding: 10px 16px; border-radius: 999px; background: var(--ink); color: var(--accent-soft);
+  transition: top var(--fast) var(--ease);
+}
+.skip-link:focus { top: 12px; }
+/* ---------- Motion ---------- */
+
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes pop { from { opacity: 0; transform: translateY(-6px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes shimmer { to { transform: translateX(100%); } }
+@keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* ---------- Smooth movement between pages and inside them ---------- */
+
+html { scroll-behavior: smooth; }
+
+/* Moving from one page to the next cross-fades the content while the top bar stays put.
+   Browsers that do not support this simply load the page as usual. */
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation: page-out 160ms var(--ease) both; }
+::view-transition-new(root) { animation: page-in 260ms var(--ease) both; }
+@keyframes page-out { to { opacity: 0; transform: translateY(-6px); } }
+@keyframes page-in { from { opacity: 0; transform: translateY(10px); } }
+
+/* Switching theme opens the new colours outward from the button (see app.js). */
+.theme-reveal::view-transition-old(root), .theme-reveal::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+
+/* Opening a citation or a step's details slides it open. */
+:root { interpolate-size: allow-keywords; }
+details.cite::details-content, .steps details::details-content {
+  block-size: 0; overflow: clip;
+  transition: block-size 240ms var(--ease), content-visibility 240ms allow-discrete;
+}
+details.cite[open]::details-content, .steps details[open]::details-content { block-size: auto; }
+
+/* Text links draw their underline from left to right. */
+main a:not([class]), .back {
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 0 1.5px;
+  transition: background-size 220ms var(--ease), color var(--fast) var(--ease);
+}
+main a:not([class]):hover, .back:hover { text-decoration: none; background-size: 100% 1.5px; }
+.back .icon { transition: transform var(--fast) var(--ease); }
+.back:hover .icon { transform: translateX(-3px); }
+
+@keyframes float { 50% { transform: translateY(-10px); } }
+@keyframes pulse-ring { 0% { transform: scale(0.9); opacity: 0.7; } 100% { transform: scale(1.5); opacity: 0; } }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes fade-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }

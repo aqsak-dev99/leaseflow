@@ -1,20 +1,22 @@
-<table class="table">
+<div class="table-wrap">
+<table class="table stackable">
   <thead>
     <tr><th>#</th><th>Problem</th><th>Unit</th><th>Category</th><th>Priority</th><th>Status</th><th>Reported</th></tr>
   </thead>
   <tbody>
     {% for ticket in tickets %}
-      <tr>
-        <td>{{ ticket.id }}</td>
-        <td><a href="{% url 'dashboard:ticket_detail' ticket.id %}">{{ ticket.title }}</a></td>
-        <td>{{ ticket.unit.unit_number }}</td>
-        <td>{{ ticket.get_category_display }}</td>
-        <td><span class="badge priority-{{ ticket.priority }}">{{ ticket.get_priority_display }}</span></td>
-        <td><span class="badge status-{{ ticket.status }}">{{ ticket.get_status_display }}</span></td>
-        <td class="muted">{{ ticket.created_at|date:"j M Y" }}</td>
+      <tr class="row-link" data-href="{% url 'dashboard:ticket_detail' ticket.id %}">
+        <td data-label="Ticket" class="muted hide-phone">{{ ticket.id }}</td>
+        <td data-label="Problem" class="strong"><a href="{% url 'dashboard:ticket_detail' ticket.id %}">{{ ticket.title }}</a></td>
+        <td data-label="Unit">{{ ticket.unit.unit_number }}</td>
+        <td data-label="Category" class="hide-phone">{{ ticket.get_category_display }}</td>
+        <td data-label="Priority"><span class="badge priority-{{ ticket.priority }}">{{ ticket.get_priority_display }}</span></td>
+        <td data-label="Status"><span class="badge status-{{ ticket.status }}">{{ ticket.get_status_display }}</span></td>
+        <td data-label="Reported" class="muted">{{ ticket.created_at|date:"j M Y" }}</td>
       </tr>
     {% empty %}
-      <tr><td colspan="7" class="muted">No tickets.</td></tr>
+      <tr><td colspan="7" class="cell-empty">No tickets.</td></tr>
     {% endfor %}
   </tbody>
 </table>
+</div>

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block title %}Your invitation · LeaseFlow{% endblock %}
+{% block body_class %} is-auth{% endblock %}
+{% block content %}
+{% include "accounts/_scene.html" %}
+<div class="glass">
+  <div>
+    <div class="eyebrow">Invitation from {{ invitation.organization.name }}</div>
+    <h1>Welcome</h1>
+    <p class="muted">Unit {{ invitation.unit.unit_number }} at {{ invitation.unit.property.name }}</p>
+  </div>
+  <dl class="facts invite-facts">
+    <div><dt>Monthly rent</dt><dd>Rs. {{ invitation.rent_amount|floatformat:"0g" }}, due on day {{ invitation.due_day }}</dd></div>
+    <div><dt>Lease runs</dt><dd>{{ invitation.start_date|date:"j M Y" }} to {{ invitation.end_date|date:"j M Y" }}</dd></div>
+    <div><dt>Account email</dt><dd>{{ invitation.email }}</dd></div>
+  </dl>
+  <form method="post" class="form" novalidate>
+    {% csrf_token %}
+    {% if form %}
+      {% if account %}<p class="muted">You already have a LeaseFlow account. Enter your password to accept.</p>{% endif %}
+      {% include "accounts/_fields.html" %}
+    {% endif %}
+    <button class="btn btn-arrow" type="submit">{% if account %}Accept invitation{% else %}Create my account{% endif %}<span class="btn-arrow-dot">{% icon "arrow" 16 %}</span></button>
+  </form>
+</div>
+{% endblock %}

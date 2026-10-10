@@ -1,25 +1,115 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}Dashboard · LeaseFlow{% endblock %}
 {% block content %}
-<h1>{{ request.organization.name|default:"Dashboard" }}</h1>
-<div class="stats">
-  <div class="card stat"><span class="stat-number">{{ occupied }}</span><span class="muted">Occupied units</span></div>
-  <div class="card stat"><span class="stat-number">{{ vacant }}</span><span class="muted">Vacant units</span></div>
-  <div class="card stat"><span class="stat-number">{{ tenants }}</span><span class="muted">Tenants</span></div>
-  <div class="card stat"><span class="stat-number">{{ open_tickets }}</span><span class="muted">Open tickets</span></div>
-  <div class="card stat"><span class="stat-number">Rs. {{ outstanding|floatformat:"0g" }}</span><span class="muted">Rent outstanding</span></div>
-  <a class="card stat stat-link" href="{% url 'dashboard:approvals' %}"><span class="stat-number">{{ pending_approvals }}</span><span class="muted">Waiting for your approval</span></a>
+<div class="grid grid-hero">
+  <section class="card card-maroon hero" aria-label="Rent">
+    <div class="eyebrow">{{ request.organization.name|default:"Dashboard" }} · {% now "F Y" %}</div>
+    <div>
+      <div class="hero-number" data-countup="{{ outstanding|floatformat:"0u" }}" data-prefix="Rs. ">Rs. {{ outstanding|floatformat:"0g" }}</div>
+      <div class="hero-sub">Rent outstanding</div>
+    </div>
+    <div class="stack">
+      <div class="meter" role="img" aria-label="{{ collected_percent }} percent of invoiced rent collected"><span style="width: {{ collected_percent }}%"></span></div>
+      <div class="hero-note">Rs. {{ collected|floatformat:"0g" }} collected of Rs. {{ invoiced|floatformat:"0g" }} invoiced</div>
+    </div>
+    <div class="hero-actions">
+      <form method="post" action="{% url 'dashboard:overdue_check_now' %}">
+        {% csrf_token %}
+        <button class="btn btn-gold" type="submit">Check overdue rent now</button>
+      </form>
+      <a class="btn btn-ghost" href="{% url 'dashboard:invoices' %}">Open invoices</a>
+    </div>
+  </section>
+  <div class="tiles">
+    <a class="card card-ink stat" href="{% url 'dashboard:approvals' %}">
+      <span class="stat-label">Waiting for your approval</span>
+      <span class="stat-number" data-countup="{{ pending_approvals }}">{{ pending_approvals }}</span>
+      <span class="stat-note">Reminders and waiver requests</span>
+    </a>
+    <a class="card stat" href="{% url 'dashboard:tickets' %}">
+      <span class="stat-label">Open tickets</span>
+      <span class="stat-number" data-countup="{{ open_tickets }}">{{ open_tickets }}</span>
+      <span class="stat-note">Repairs not yet resolved</span>
+    </a>
+    <a class="card stat" href="{% url 'dashboard:properties' %}">
+      <span class="stat-label">Occupied units</span>
+      <span class="stat-number">{{ occupied }}<small> of {{ unit_count }}</small></span>
+      <span class="stat-note">{{ vacant }} vacant</span>
+    </a>
+    <a class="card stat" href="{% url 'dashboard:properties' %}">
+      <span class="stat-label">Tenants</span>
+      <span class="stat-number" data-countup="{{ tenants }}">{{ tenants }}</span>
+      <span class="stat-note">With an account</span>
+    </a>
+  </div>
 </div>
 
-<div class="card section">
-  <h2>Recent tickets</h2>
+<div class="grid grid-2">
+  <section class="card">
+    <div class="card-head">
+      <h2>Waiting for your decision</h2>
+      <span class="muted">Nothing is sent or changed until you approve</span>
+    </div>
+    <div class="decisions">
+      {% for item in pending %}
+        <article class="decision">
+          <span class="tag">{% if item.kind == "reminder" %}{% icon "doc" 14 %}Reminder drafted by AI{% else %}{% icon "card" 14 %}Waiver request{% endif %}</span>
+          <h3>{{ item.subject }}</h3>
+          <p class="decision-meta">{{ item.invoice.lease.tenant.get_full_name|default:item.invoice.lease.tenant.email }}, unit {{ item.invoice.lease.unit.unit_number }} · Rs. {{ item.invoice.amount|floatformat:"0g" }}</p>
+          <p class="muted clamp">{{ item.body }}</p>
+          <div class="actions"><a class="btn btn-small" href="{% url 'dashboard:approvals' %}">Review and decide</a></div>
+        </article>
+      {% empty %}
+        <div class="empty">{% icon "check-circle" 28 %}Nothing is waiting for your approval.</div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="card card-ink">
+    <div class="card-head">
+      <h2>Latest AI run</h2>
+      {% if latest_run %}<a href="{% url 'dashboard:run_detail' latest_run.id %}">Full record</a>{% endif %}
+    </div>
+    {% if latest_run %}
+      <p><strong>{% if latest_question %}{{ latest_run.conversation.user.first_name|default:"Tenant" }} asked: {{ latest_question.content|truncatechars:90 }}{% else %}{{ latest_run.get_trigger_display }} run on the {{ latest_run.route|default:"other" }} route{% endif %}</strong></p>
+      {% include "dashboard/_steps.html" with steps=latest_steps detailed=False %}
+      <div class="run-foot">
+        <span>{{ latest_run.input_tokens }} in, {{ latest_run.output_tokens }} out</span>
+        <span>${{ latest_run.cost|floatformat:6 }}</span>
+        <span>{{ latest_run.latency_ms }} ms</span>
+      </div>
+    {% else %}
+      <p class="muted">No assistant has run yet. Runs appear here when a tenant uses the chat or the overdue check drafts a reminder.</p>
+    {% endif %}
+  </section>
+</div>
+
+<section class="card">
+  <div class="card-head"><h2>Recent tickets</h2><a href="{% url 'dashboard:tickets' %}">All tickets</a></div>
   {% include "dashboard/_ticket_table.html" with tickets=recent_tickets %}
-  <p><a href="{% url 'dashboard:tickets' %}">All tickets</a></p>
-</div>
+</section>
 
-<div class="card section">
-  <h2>Recent AI activity</h2>
-  {% include "dashboard/_run_table.html" with runs=recent_runs %}
-  <p><a href="{% url 'dashboard:activity' %}">All activity</a></p>
-</div>
+<section class="card">
+  <div class="card-head"><h2>Rent ledger</h2><a href="{% url 'dashboard:invoices' %}">All invoices</a></div>
+  <div class="table-wrap">
+  <table class="table stackable">
+    <thead><tr><th>Tenant</th><th>Unit</th><th>Month</th><th>Due</th><th class="right">Amount</th><th class="right">Status</th></tr></thead>
+    <tbody>
+      {% for invoice in recent_invoices %}
+        <tr>
+          <td data-label="Tenant" class="strong">{{ invoice.lease.tenant.get_full_name|default:invoice.lease.tenant.email }}</td>
+          <td data-label="Unit">{{ invoice.lease.unit.unit_number }}</td>
+          <td data-label="Month">{{ invoice.period|date:"M Y" }}</td>
+          <td data-label="Due">{{ invoice.due_date|date:"j M" }}</td>
+          <td data-label="Amount" class="right">Rs. {{ invoice.amount|floatformat:"0g" }}</td>
+          <td data-label="Status" class="right"><span class="badge status-{{ invoice.status }}">{{ invoice.get_status_display }}</span></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="cell-empty">No invoices yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
 {% endblock %}

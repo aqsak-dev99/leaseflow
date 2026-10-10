@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Notifications · LeaseFlow{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Notifications</h1>
+    <p class="muted">{% if nav_unread %}{{ nav_unread }} unread{% else %}You are up to date{% endif %}</p>
+  </div>
+  {% if nav_unread %}
+    <form method="post" action="{% url 'dashboard:notifications_read_all' %}">
+      {% csrf_token %}
+      <button class="btn btn-ghost" type="submit">Mark all as read</button>
+    </form>
+  {% endif %}
+</div>
+<div class="card note-list">
+  {% include "dashboard/_notification_list.html" %}
+  {% include "dashboard/_pagination.html" %}
+</div>
+{% endblock %}

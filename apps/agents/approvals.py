@@ -4,9 +4,12 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.mail import send_mail
 from django.db import IntegrityError, transaction
+from django.urls import reverse
 from django.utils import timezone
 
 from apps.billing.models import Invoice
+from apps.notifications import services as notifications
+from apps.notifications.models import Notification
 
 from .models import ApprovalRequest
 
@@ -40,10 +43,35 @@ def _create(*, invoice, kind, subject, body, requested_by=None, run=None):
     return request, True
 
 
+def _tell_landlords(request, title):
+    """Put a new request in front of the landlords, who are the only ones who can decide it."""
+    unit = request.invoice.lease.unit.unit_number
+    notifications.notify_landlords(
+        request.organization,
+        kind=Notification.Kind.APPROVAL,
+        title=title,
+        body=f"Rent for {request.invoice.period:%B %Y}, unit {unit}. Needs your decision.",
+        url=reverse("dashboard:approvals"),
+    )
+
+
+def _tell_tenant(request, title, body):
+    notifications.notify(
+        user=request.invoice.lease.tenant,
+        kind=Notification.Kind.RENT,
+        title=title,
+        body=body,
+        url=reverse("dashboard:invoices"),
+    )
+
+
 def request_reminder(*, invoice, subject, body, run=None):
-    return _create(
+    request, created = _create(
         invoice=invoice, kind=ApprovalRequest.Kind.REMINDER, subject=subject, body=body, run=run
     )
+    if created:
+        _tell_landlords(request, "A rent reminder was drafted for your approval")
+    return request, created
 
 
 def request_waiver(*, user, invoice, reason):
@@ -52,13 +80,16 @@ def request_waiver(*, user, invoice, reason):
         raise ValidationError("A waiver request needs a reason.")
     unit = invoice.lease.unit.unit_number
     subject = f"Waiver request: rent for {invoice.period:%B %Y}, unit {unit}"
-    return _create(
+    request, created = _create(
         invoice=invoice,
         kind=ApprovalRequest.Kind.WAIVER,
         subject=subject,
         body=reason,
         requested_by=user,
     )
+    if created:
+        _tell_landlords(request, f"Waiver request from {notifications.display_name(user)}")
+    return request, created
 
 
 def requests_for(user):
@@ -104,11 +135,17 @@ def approve(*, user, request_id, subject=None, body=None):
         )
         invoice.last_reminder_at = timezone.now()
         invoice.save(update_fields=["last_reminder_at"])
+        _tell_tenant(request, request.subject, "Your landlord sent you a reminder by email.")
     elif request.kind == ApprovalRequest.Kind.WAIVER:
         if not invoice.is_unpaid:
             raise ValidationError("That invoice is no longer waiting for payment.")
         invoice.status = Invoice.Status.WAIVED
         invoice.save(update_fields=["status"])
+        _tell_tenant(
+            request,
+            "Your waiver request was approved",
+            f"Rent for {invoice.period:%B %Y} has been waived.",
+        )
     _close(request, user, ApprovalRequest.Status.APPROVED)
     return request
 
@@ -117,4 +154,10 @@ def approve(*, user, request_id, subject=None, body=None):
 def reject(*, user, request_id, note=""):
     request = _pending(user, request_id)
     _close(request, user, ApprovalRequest.Status.REJECTED, (note or "").strip())
+    if request.kind == ApprovalRequest.Kind.WAIVER:
+        _tell_tenant(
+            request,
+            "Your waiver request was declined",
+            f"Rent for {request.invoice.period:%B %Y} is still due.",
+        )
     return request
