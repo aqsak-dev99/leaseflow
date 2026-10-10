@@ -21,7 +21,7 @@
     <div class="lease-text">{{ before }}{% if cited %}{% if focus %}{% if lead %}<mark>{{ lead }}</mark>{% endif %}<mark id="cited" class="focus">{{ focus }}</mark>{% if tail %}<mark>{{ tail }}</mark>{% endif %}{% else %}<mark id="cited">{{ lead }}{{ tail }}</mark>{% endif %}{% endif %}{{ after }}</div>
   </article>
   {% if has_file %}
-    <iframe class="lease-pdf card" src="{% url 'documents:file' document.id %}#page={{ page_number }}" title="{{ document.title }}, original PDF" loading="lazy"></iframe>
+    <iframe class="lease-pdf card" src="{% url 'documents:file' document.id %}#page={{ page_number }}&toolbar=0&navpanes=0&view=FitH" title="{{ document.title }}, original PDF" loading="lazy"></iframe>
   {% endif %}
 </div>
 {% endblock %}
